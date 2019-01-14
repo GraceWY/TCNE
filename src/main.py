@@ -26,19 +26,15 @@ def init(args, params, whole_params):
     info['time'] = ct.get_time_str()
     info['whole_params'] = whole_params
     info["conf_name"] = args.conf
-    info["log"] = args.log
     info["res_home"] = os.path.join(os.path.join(RES_PATH, args.conf), info["time"])
     info["data_path"] = DATA_PATH
     info["home_path"] = ROOT_PATH
     info["network_folder"] = params["network_folder"]
     info["network_folder"]["name"] = os.path.join(DATA_PATH, params["network_folder"]["name"])
 
-    if info["log"] == 0:
-        info["logger"] = ct.get_logger(level="logging.%s"%(args.level))
-    else:
-        log_path = os.path.join(LOG_PATH, info["time"] + ".log")
-        info["logger"] = ct.get_logger(log_filename=log_path, level="logging.%s"%(args.level))
-        ct.symlink(log_path, os.path.join(LOG_PATH, "new_log"))
+    log_path = os.path.join(LOG_PATH, info["time"] + ".log")
+    info["logger"] = ct.get_logger(log_filename=log_path)
+    ct.symlink(log_path, os.path.join(LOG_PATH, "new_log"))
 
     ct.symlink(info["res_home"], os.path.join(RES_PATH, "new_res"))
 
@@ -49,17 +45,15 @@ def init(args, params, whole_params):
 def main():
     parser = argparse.ArgumentParser(formatter_class = argparse.RawTextHelpFormatter)
     parser.add_argument("--conf", type = str, default = "toy")
-    parser.add_argument("--log", type = int, default = 0, help="0 if log print out in screen else 1")
     parser.add_argument("--level", type = str, default = "INFO", help="log level = INFO | DEBUG")
     args = parser.parse_args()
     params = dh.load_json(os.path.join(CONF_PATH, args.conf + ".json"))
     info = init(args, params["static_info"], params)
-    info["logger"].debug("log level is DEBUG")
     info["logger"].info("init finished! \n %s \n" %(info))
+    info["logger"].debug("log level is DEBUG")
 
     res = {}
     for module in params["run_modules"]:
-        info["logger"].info("run module: %s" % (module["func"]))
         mdl_name = module["func"]
         mdl_params = module["params"]
         mdl = __import__(mdl_name + "." + mdl_params["func"], fromlist=[mdl_name])

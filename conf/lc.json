@@ -3,7 +3,7 @@
         "random_seed": 157,
         "np_seed": 213,
         "network_folder": {
-            "name": "toy",
+            "name": "lc",
             "entity": "entity.dat",
             "tag": "tag.dat",
             "edge": "edge.dat",
@@ -24,9 +24,9 @@
             "params": {
                 "func": "hybrid_walker",
                 "c": 0.5,
-                "num_paths": 5,
+                "num_paths": 100,
                 "max_path_len": 5,
-                "alpha": 0.01 
+                "alpha": 0.001 
             }    
         }
    ] 

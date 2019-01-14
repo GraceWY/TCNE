@@ -26,7 +26,6 @@ def get_logger(log_filename=None, module_name=__name__, level=logging.INFO):
         raise ValueError("log_filename invalid!")
 
     # build logger
-    level = eval(level)
     logger = logging.getLogger(module_name)
     logger.setLevel(level)
     handler.setLevel(level)
@@ -35,6 +34,32 @@ def get_logger(log_filename=None, module_name=__name__, level=logging.INFO):
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     return logger
+
+
+def module_decorator(func):
+    """ The decorator of moduler
+    """
+    def wrapper(*args, **kwargs):
+        print ("[+] Start %s ..." % (kwargs["mdl_name"], ))
+        kwargs["info"]["logger"].info("[+] Start %s ...\n" % (kwargs["mdl_name"], ))
+        start_time = datetime.now()
+
+        res = func(*args, **kwargs)
+
+        end_time = datetime.now()
+
+        duration = (end_time-start_time).seconds
+
+        print ("[+] Finished !\n[+] During Time: %.2f" % (duration))
+        kwargs["info"]["logger"].info("[+] Finished !\n[+] During Time: %.2f\n" % (duration))
+
+        res["Duration"] = duration
+        print ("[+] Module Results: %s\n" % (str(res)))
+        kwargs["info"]["logger"].info("[+] Module Results: %s\n\n" % (str(res)))
+
+        return res
+    return wrapper
+
 
 if __name__ == "__main__":
     logger = get_logger()

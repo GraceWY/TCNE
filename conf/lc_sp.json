@@ -3,7 +3,7 @@
         "random_seed": 157,
         "np_seed": 213,
         "network_folder": {
-            "name": "toy",
+            "name": "lc",
             "entity": "entity.dat",
             "tag": "tag.dat",
             "edge": "edge.dat",
@@ -18,6 +18,13 @@
                 "func": "construct_graph",
                 "directed": false
             } 
+        },
+        {
+            "func": "tag_walker",
+            "params": {
+                "func": "shortest_path",
+                "max_path_len": 5
+            }    
         }
    ] 
 }

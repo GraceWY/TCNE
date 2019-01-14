@@ -4,7 +4,6 @@ import networkx as nx
 import random
 import numpy as np
 
-from utils.data_handler import DataHandler as dh
 from utils import common_tools as ct
 from tag_walker import utils
 
@@ -14,7 +13,7 @@ import pdb
 def params_handler(params, info, pre_res, **kwargs):
     return {}
 
-
+@ct.module_decorator
 def tag_walker(params, info, pre_res, **kwargs):
     """ Return the filepath with the written walks \
             [from_tag, to_tag, weight] = (str, str, int)

@@ -13,7 +13,7 @@ def params_handler(params, info, pre_res, **kwargs):
     params["network_folder"] = info["network_folder"]
     return {}
 
-
+@ct.module_decorator
 def construct_graph(params, info, pre_res, **kwargs):
     """
         params: the parameters of the current module
