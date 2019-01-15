@@ -27,7 +27,14 @@ def tag_walker(params, info, pre_res, **kwargs):
             (params["num_paths"], params["max_path_len"])
     res["walk_file_details"] = os.path.join(info["network_folder"]["name"], "%s_details.dat"%(prefix))
     res["walk_file"] = os.path.join(info["network_folder"]["name"], "%s.dat"%(prefix))
-    assert not os.path.exists(res["walk_file"]), "the walks file has existed!"
+    # assert not os.path.exists(res["walk_file"]), "the walks file has existed!"
+    # if the file has existed, return directly
+    if os.path.exists(res["walk_file"]):
+        print ("[+] The walk_file has existed in %s \n \
+                this module %s has finished!" % (res["walk_file"], params["func"]))
+        info["logger"].info("[+] The walk_file has existed in %s \n \
+                this module %s has finished!" % (res["walk_file"], params["func"]))
+        return res
 
     HG = pre_res["construct_graph"]["HG"]
     G = pre_res["construct_graph"]["G"]
