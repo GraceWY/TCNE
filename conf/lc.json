@@ -28,6 +28,30 @@
                 "max_path_len": 5,
                 "alpha": 0.001 
             }    
+        },
+        {
+            "func": "optimize",
+            "params": {
+                "func": "optimizer",
+                "filename": "",
+                "batch_strategy": "weighted_edges_sampling",
+                "batch_size": 128,
+                "iterations": 1000,
+                "embedding_model": {
+                    "func": "gauss_embedding_model",
+                    "params": {
+                        "learning_rate": 0.01,
+                        "optimizer": "AdamOptimizer",
+                        "embed_size": 32,
+                        "Closs": 1.0,
+                        "spherical": true,
+                        "fixvar": false,
+                        "wout": false,
+                        "normclip": false,
+                        "show_num": 1000   
+                    }    
+                }
+            }
         }
    ] 
 }
