@@ -50,11 +50,10 @@ def optimize(params, info, pre_res, **kwargs):
 
     # map the the mus and sigs with their name according to G 
     res["mus"], res["sigs"] = map_id_to_label(G, mus, sigs) 
-    res["embedding_path"] = os.path.join(RES_PATH, info["result_folder"]) 
 
     # save in the file
-    dh.save_dict(res["mus"], res["embedding_path"]+".mus")
-    dh.save_dict(res["sigs"], res["embedding_path"]+".sigs")
+    dh.save_dict(res["mus"], os.path.join(info["res_home"], "mus.dat"))
+    dh.save_dict(res["sigs"], os.path.join(info["res_home"], "sigs.dat"))
 
     return res
 

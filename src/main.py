@@ -27,6 +27,9 @@ def init(args, params, whole_params):
     info['whole_params'] = whole_params
     info["conf_name"] = args.conf
     info["res_home"] = os.path.join(os.path.join(RES_PATH, args.conf), info["time"])
+    pdb.set_trace()
+    if not os.path.exists(info["res_home"]):
+        os.makedirs(info["res_home"])
     info["data_path"] = DATA_PATH
     info["home_path"] = ROOT_PATH
     info["network_folder"] = params["network_folder"]

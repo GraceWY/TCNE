@@ -10,8 +10,7 @@
             "edge": "edge.dat",
             "mix_edge": "mix_edge.dat",
             "label": "label.dat"
-        },
-        "result_folder": "lc" 
+        }
     },    
    "run_modules": [
         {
