@@ -78,7 +78,7 @@ def tag_walker(params, info, pre_res, **kwargs):
 
 
 ## I'm not sure whether tag can be plugged into the path between tag and tag
-## and  in this version, other tags can be plugged.
+## and in this version, other tags can be plugged in the inner path.
 def tag_walker_old(params, info, pre_res, **kwargs):
     """ Return the filepath with the written walks \
             [from_tag, to_tag, weight] = (str, str, int)

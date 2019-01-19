@@ -4,7 +4,11 @@ import networkx as nx
 import random
 import numpy as np
 
-import alias_table_sampling import AliasTable as at
+from batch_strategy.alias_table_sampling import AliasTable as at
+
+import pdb
+
+INT = np.int32
 
 class BatchStrategy(object):
     def __init__(self, G, params=None):
@@ -19,7 +23,7 @@ class BatchStrategy(object):
 
         # for sampling u and v_pos
         for e in self.edges: 
-            edge_probs.append(G[e[0][e[1]]["weight"])
+            edge_probs.append(G[e[0]][e[1]]["weight"])
         self.edge_sampler = at(edge_probs)
 
         # for sampling v_neg

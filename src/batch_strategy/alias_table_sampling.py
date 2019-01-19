@@ -5,21 +5,21 @@ import numpy as np
 
 FLOAT = np.float64
 INT = np.int32
+NONE = -1
 
 class AliasTable():
     def __init__(self, _probs):
         probs = np.array(_probs, dtype=FLOAT)
         self.num = len(_probs)
         probs = self.num * probs / np.sum(probs)
-        print (probs)
         self.probs_table = np.ones(self.num, dtype=FLOAT)
         self.alias_table = np.zeros(self.num, dtype=INT)
         L, H = [], []
 
         for i in range(self.num):
-            if probs[i] == 1:
+            if abs(probs[i]-1) < 1e-15:
                 self.probs_table[i] = 1.0
-                self.alias_table[i] = None
+                self.alias_table[i] = NONE 
             elif probs[i] < 1:
                 L.append(i)
             else:
@@ -31,10 +31,10 @@ class AliasTable():
             self.probs_table[l] = probs[l]
             self.alias_table[l] = h
             probs[h] = probs[h] - (1 - probs[l])
-            if probs[h] == 1:
+            if abs(probs[h]-1) < 1e-15:
                 self.probs_table[h] = 1.0
-                self.alias_table[h] = None
-            elif probs[h] < 1:
+                self.alias_table[h] = NONE
+            elif probs[h] < 1.0:
                 L.append(h)
             else:
                 H.append(h)

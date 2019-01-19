@@ -2,6 +2,7 @@
     "static_info" : {
         "random_seed": 157,
         "np_seed": 213,
+        "embed_size": 8,
         "network_folder": {
             "name": "lc",
             "entity": "entity.dat",
@@ -9,7 +10,8 @@
             "edge": "edge.dat",
             "mix_edge": "mix_edge.dat",
             "label": "label.dat"
-        } 
+        },
+        "result_folder": "lc" 
     },    
    "run_modules": [
         {
@@ -32,24 +34,21 @@
         {
             "func": "optimize",
             "params": {
-                "func": "optimizer",
-                "filename": "",
+                "func": "optimize_tag",
+                "walk_file": "/Users/wangyun/repos/TCNE/data/lc/hybrid_walk_nums_path(100)_max_path_len(5).dat",
                 "batch_strategy": "weighted_edges_sampling",
-                "batch_size": 128,
+                "batch_size": 32,
                 "iterations": 1000,
                 "embedding_model": {
                     "func": "gauss_embedding_model",
-                    "params": {
-                        "learning_rate": 0.01,
-                        "optimizer": "AdamOptimizer",
-                        "embed_size": 32,
-                        "Closs": 1.0,
-                        "spherical": true,
-                        "fixvar": false,
-                        "wout": false,
-                        "normclip": false,
-                        "show_num": 1000   
-                    }    
+                    "learning_rate": 0.01,
+                    "optimizer": "AdamOptimizer",
+                    "Closs": 1.0,
+                    "spherical": true,
+                    "fixvar": false,
+                    "wout": false,
+                    "normclip": false,
+                    "show_num": 100   
                 }
             }
         }

@@ -3,9 +3,12 @@ import sys
 import tensorflow as tf
 import random
 import math
+import numpy as np
 
-sys.path.insert(0, "..")
 from utils import common_tools as ct
+from utils.data_handler import DataHandler as dh
+
+import pdb
 
 INT = tf.int32
 FLOAT = tf.float32
@@ -45,7 +48,6 @@ class NodeEmbedding(object):
     def build_graph(self):
         """ Build graph for Gauss Embedding
         """
-
         mu_scale = self.mu_scale * math.sqrt(3.0/(1.0 * self.dim))
         logvar_scale = math.log(self.var_scale)
         var_trainable = 1-self.fixvar
@@ -112,9 +114,9 @@ class NodeEmbedding(object):
                             )
 
                 with tf.name_scope("LossCal"):
-                    self.energy_pos = energy(self.mu_embed, self.mu_embed_pos, self.sig_embed, self.sig_embed_pos) 
-                    self.energy_neg = energy(self.mu_embed, self.mu_embed_neg, self.sig_embed, self.sig_embed_neg) 
-                    self.loss = tf.maximum(0.0, self.Closs - self.energy_pos + self.energy_neg, name='MarginLoss')
+                    self.energy_pos = energy(self.mu_embed, self.sig_embed, self.mu_embed_pos, self.sig_embed_pos) 
+                    self.energy_neg = energy(self.mu_embed, self.sig_embed, self.mu_embed_neg, self.sig_embed_neg) 
+                    self.loss = tf.reduce_mean(tf.maximum(0.0, self.Closs - self.energy_pos + self.energy_neg, name='MarginLoss'))
 
                 self.train_step = getattr(tf.train, self.optimizer)(self.lr).minimize(self.loss)
 
@@ -144,7 +146,7 @@ class NodeEmbedding(object):
                     self.clip_op = clip_ops_graph()
 
 
-    def train(self, get_batch, save_path=None):
+    def train(self, get_batch):
         print ("[+] Start gaussian embedding ...")
         self.logger.info("[+] Start gaussian embedding ...")
         loss = 0.0
@@ -161,11 +163,11 @@ class NodeEmbedding(object):
                     self.clip_op.eval(input_dict)
                 
                 if (i + 1) % self.show_num == 0:
-                    print ("Epoch %d, Loss: %f" % (i+1, loss / self.show_num))
-                    self.logger.info("Epoch %d, Loss: %f\n" % (i+1, loss / self.show_num))
+                    print ("Epoch %d, Loss: %f" % (i+1, np.sum(loss / self.show_num)))
+                    self.logger.info("Epoch %d, Loss: %f\n" % (i+1, np.sum(loss / self.show_num)))
                     loss = 0.0
 
-            return sess.run(self.mu), sess.run(self.logsig)
+            return np.array(sess.run(self.mu)), np.array(sess.run(self.logsig))
 
     def show_graph(self):
         with tf.Session(graph = self.tensor_graph) as sess:

@@ -58,7 +58,46 @@ class DataHandler(object):
             s = re.sub('\s', "", s)
         return json.loads(s)
 
+    @staticmethod
+    def load_as_graph(file_path):
+        """ Load walk file {str, str, float}
+            Return networkx G
+        """
+        lst = []
+        mp = dict()
+        G = nx.Graph()
+        cur = 0
+        with open(file_path, "r") as f:
+            for line in f:
+                line = line.strip()
+                if len(line) == 0:
+                    continue
+                items = line.split("\t")
+                if items[0] not in mp:
+                    mp[items[0]] = cur
+                    G.add_node(cur, {"name": items[0]})
+                    cur += 1
+                if items[1] not in mp:
+                    mp[items[1]] = cur
+                    G.add_node(cur, {"name": items[1]})
+                    cur += 1
+                w = 1.0 if len(items) < 3 else float(items[2])
+                G.add_edge(mp[items[0]], mp[items[1]], weight=w)
+        return G
+
+
+    @staticmethod
+    def save_dict(mp, file_name):
+        """ Save dict to file_name
+        """
+        with open(file_name, "w") as f:
+            for k, v in mp.items():
+                line = k + "\t" +  " ".join([str(i) for i in mp[k]]) + "\n"
+                f.write(line)
+
+
 if __name__ == "__main__":
-    f = "t.dat"
-    ids = list(DataHandler.load_name(f).keys())
-    print (ids)
+    f = "tmp.txt"
+    mp = {"1": [1, 1], "2": [2, 2]}
+    DataHandler.save_dict(mp, f)
+    

@@ -56,6 +56,11 @@ def main():
     for module in params["run_modules"]:
         mdl_name = module["func"]
         mdl_params = module["params"]
+        print (mdl_name)
+
+        if mdl_name in ["construct_graph", "tag_walker"]:
+            continue
+
         mdl = __import__(mdl_name + "." + mdl_params["func"], fromlist=[mdl_name])
         res[mdl_name] = getattr(mdl, mdl_name)(mdl_params, info = info, pre_res = res, mdl_name = mdl_name)
 
