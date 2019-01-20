@@ -22,7 +22,7 @@ def tag_walker(params, info, pre_res, **kwargs):
         info: the whole params of the model
         pre_res: the results from the previous modules, for this case is HG, G
     """
-    res = params_handler(params, info)
+    res = params_handler(params,info,pre_res)
     res["walk_file"] = os.path.join(info["network_folder"]["name"], "SimRank_walker.dat")
     res["walk_file_details"] = os.path.join(info["network_folder"]["name"], "SimRank_walker_details.dat")
     # assert not os.path.exists(res["walk_file"]), "the walk file has existed!"
@@ -42,11 +42,15 @@ def tag_walker(params, info, pre_res, **kwargs):
     out_mapp = dict()
 
     nodes=HG.nodes()
-    pred_func = HG.predecessors if isinstance(HG, nx.DiGraph) else HG.neighbors
+    nodes_dic=HG.nodes(data=True)
     nodes_i = {nodes[i]: i for i in range(0, len(nodes))}
 
     sim_prev = numpy.zeros(len(nodes))
     sim = numpy.identity(len(nodes))
+
+    max_iter=params["max_iter"]
+    eps=params["eps"]
+    r=params["r"]
 
     for i in range(max_iter):
         if numpy.allclose(sim, sim_prev, atol=eps): 
@@ -54,15 +58,15 @@ def tag_walker(params, info, pre_res, **kwargs):
     sim_prev = numpy.copy(sim)
     for u, v in itertools.product(nodes, nodes):
         if u is v: continue
-        u_ps, v_ps = pred_func(u), pred_func(v)
+        u_ps, v_ps = HG.neighbors(u), HG.neighbors(v)
         s_uv = sum(sim_prev[nodes_i[u_n]][nodes_i[v_n]] for u_n, v_n in itertools.product(u_ps, v_ps))
         sim[nodes_i[u]][nodes_i[v]] = (r * s_uv) / (len(u_ps) * len(v_ps) + DIV_EPS)
 
-    len_nodes=len[nodes]
+    len_nodes=len(nodes)
     for i in range(len_nodes):
         for j in range(i+1,len_nodes):
-            if i in tag_lst and j in tag_lst:
-                tag_pair=utils.get_output(HG,tag_lst[i],tag_lst[j])
+            if nodes_dic[i][1]["type"]=="tag" and nodes_dic[j][1]["type"]=="tag":
+                tag_pair=utils.get_simrank_output(HG,nodes[i],nodes[j])
                 out_mapp[tag_pair]=sim[i][j]
 
 
