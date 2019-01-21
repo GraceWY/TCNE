@@ -13,10 +13,16 @@ import pdb
 def params_handler(params, info, **kwargs):
     return {}
 
+def get_similarity_reverse(diff):
+    return 1/(diff+1)
+
+def get_similarity_exp(diff):
+    return np.exp(-diff)
+
 @ct.module_decorator
 def tag_walker(params, info, pre_res, **kwargs):
     """ Return the filepath with the written walks \
-            [from_tag, to_tag, weight] = (str, str, int)
+            [from_tag, to_tag, similarity] = (str, str, int)
 
         params: the params of this module
         info: the whole params of the model
@@ -42,7 +48,6 @@ def tag_walker(params, info, pre_res, **kwargs):
             if n["type"] == "tag"]
 
     out_mapp = dict()
-    _sum = 0
     with open(res["walk_file_details"], "w") as f:
         for i in range(len(tag_lst)):
             for j in range(i+1, len(tag_lst)):
@@ -63,14 +68,15 @@ def tag_walker(params, info, pre_res, **kwargs):
                             f.write(utils.get_output_details(HG, EG, npath))
                         except nx.NetworkXNoPath:
                             continue
+
                 if len(len_lst) > 0:
                     tag_pair = utils.get_output(HG, [tag_lst[i], tag_lst[j]])
-                    out_mapp[tag_pair] = sum(len_lst) / float(len(len_lst))
-                    _sum += out_mapp[tag_pair]
+                    out_mapp[tag_pair] = get_similarity_exp(sum(len_lst) / float(len(len_lst)))
+                    # out_mapp[tag_pair] = get_similarity_exp(min(len_lst))
 
     with open(res["walk_file"], "w") as f:
         for k, v in out_mapp.items():
-            f.write("%s\t%.8f\n" % (k, v/_sum))
+            f.write("%s\t%.8f\n" % (k, v))
     
     info["logger"].info("the tag similarity file path is: %s" % (res))
 
@@ -104,7 +110,6 @@ def tag_walker_old(params, info, pre_res, **kwargs):
             if n["type"] == "tag"]
 
     out_mapp = dict()
-    _sum = 0
     with open(res["walk_file_details"], "w") as f:
         for i in range(len(tag_lst)):
             for j in range(i+1, len(tag_lst)):
@@ -112,10 +117,9 @@ def tag_walker_old(params, info, pre_res, **kwargs):
                 f.write(utils.get_output_details(HG, EG, path))
                 tag_pair = utils.get_output(HG, path)
                 out_mapp[tag_pair] = len(path)-1
-                _sum += out_mapp[tag_pair]
 
     with open(res["walk_file"], "w") as f:
         for k, v in out_mapp.items():
-            f.write(k + "\t" + str(v/_sum))
+            f.write(k + "\t" + str(v))
 
     return res

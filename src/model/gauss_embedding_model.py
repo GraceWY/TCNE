@@ -160,7 +160,7 @@ class NodeEmbedding(object):
                 loss += self.loss.eval(input_dict)
 
                 if self.normclip:
-                    self.clip_op.eval(input_dict)
+                    sess.run(self.clip_op, feed_dict=input_dict)
                 
                 if (i + 1) % self.show_num == 0:
                     print ("Epoch %d, Loss: %f" % (i+1, np.sum(loss / self.show_num)))

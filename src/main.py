@@ -27,7 +27,6 @@ def init(args, params, whole_params):
     info['whole_params'] = whole_params
     info["conf_name"] = args.conf
     info["res_home"] = os.path.join(os.path.join(RES_PATH, args.conf), info["time"])
-    pdb.set_trace()
     if not os.path.exists(info["res_home"]):
         os.makedirs(info["res_home"])
     info["data_path"] = DATA_PATH
@@ -47,7 +46,7 @@ def init(args, params, whole_params):
 
 def main():
     parser = argparse.ArgumentParser(formatter_class = argparse.RawTextHelpFormatter)
-    parser.add_argument("--conf", type = str, default = "toy")
+    parser.add_argument("--conf", type = str, default = "lc")
     parser.add_argument("--level", type = str, default = "INFO", help="log level = INFO | DEBUG")
     args = parser.parse_args()
     params = dh.load_json(os.path.join(CONF_PATH, args.conf + ".json"))
@@ -60,10 +59,9 @@ def main():
         mdl_name = module["func"]
         mdl_params = module["params"]
         print (mdl_name)
-
-        if mdl_name in ["construct_graph", "tag_walker"]:
-            continue
-
+        pdb.set_trace()
+        # if mdl_name in ["construct_graph", "tag_walker"]:
+        #     continue
         mdl = __import__(mdl_name + "." + mdl_params["func"], fromlist=[mdl_name])
         res[mdl_name] = getattr(mdl, mdl_name)(mdl_params, info = info, pre_res = res, mdl_name = mdl_name)
 

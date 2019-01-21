@@ -23,11 +23,8 @@
         {
             "func": "tag_walker",
             "params": {
-                "func": "hybrid_walker",
-                "c": 0.5,
-                "num_paths": 100,
-                "max_path_len": 5,
-                "alpha": 0.001 
+                "func": "shortest_path",
+                "max_path_len": 5
             }    
         },
         {

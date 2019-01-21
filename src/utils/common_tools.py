@@ -3,11 +3,14 @@ import sys
 import time
 import logging
 from datetime import datetime
-
+from sklearn.decomposition import PCA
+import numpy as np
 import pdb
+
 
 def get_time_str():
     return datetime.now().strftime("%Y-%m-%d-%H:%M:%S.%f")
+
 
 def symlink(src, dst):
     try:
@@ -15,6 +18,7 @@ def symlink(src, dst):
     except OSError:
         os.remove(dst)
         os.symlink(src, dst)
+
 
 def get_logger(log_filename=None, module_name=__name__, level=logging.INFO):
     # select handler
@@ -61,7 +65,19 @@ def module_decorator(func):
     return wrapper
 
 
+def reduce_dist_dim(mus, std_sigs, dim):
+    """ Todo with PCA
+    """
+    pca = PCA(n_components=dim)
+    pca.fit(mus)
+    de_mus = pca.transform(mus)
+    de_std_sigs = pca.transform(std_sigs)
+    return de_mus, de_std_sigs
+
+
 if __name__ == "__main__":
-    logger = get_logger()
-    logger.info("step1: testing")
-    logger.info("step2: starting")
+    X = np.array([[1, 1, 1], [2, 2, 2], [3, 3, 3], [4, 4, 4]])
+    nX = np.array([[1, 1, 1], [2, 2, 2], [3, 3, 3], [4, 4, 4]])
+    x, y = reduce_dist_dim(X, nX, 2)
+    print (x)
+    print (y)

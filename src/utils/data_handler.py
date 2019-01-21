@@ -6,6 +6,8 @@ import json
 import numpy as np
 from datetime import datetime
 
+FLOAT = np.float32
+
 class DataHandler(object):
     @staticmethod
     def load_edge(file_path):
@@ -95,6 +97,26 @@ class DataHandler(object):
                 line = k + "\t" +  " ".join([str(i) for i in mp[k]]) + "\n"
                 f.write(line)
 
+
+    @staticmethod
+    def load_dict(file_name):
+        """ Load dict from file_name {key "\t" lst}
+            Return mat and row2name which records the name of each row
+        """
+        mat = []
+        row2name = dict()
+        row = 0
+        with open(file_name, "r") as f:
+            for line in f:
+                line = line.strip()
+                if len(line) == 0:
+                    continue
+                items = line.split("\t")
+                row2name[row] = items[0]
+                row += 1
+                mat.append([float(i) for i in items[1].split()])
+                
+        return np.array(mat, dtype=FLOAT), row2name 
 
 if __name__ == "__main__":
     f = "tmp.txt"

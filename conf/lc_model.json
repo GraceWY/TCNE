@@ -36,16 +36,16 @@
                 "func": "optimize_tag",
                 "walk_file": "/Users/wangyun/repos/TCNE/data/lc/hybrid_walk_nums_path(100)_max_path_len(5).dat",
                 "batch_strategy": "weighted_edges_sampling",
-                "batch_size": 8,
+                "batch_size": 32,
                 "iterations": 1000,
                 "embedding_model": {
                     "func": "gauss_embedding_model",
                     "learning_rate": 0.01,
                     "optimizer": "AdamOptimizer",
                     "Closs": 1.0,
-                    "spherical": false,
+                    "spherical": true,
                     "fixvar": false,
-                    "wout": true,
+                    "wout": false,
                     "normclip": false,
                     "show_num": 100   
                 }
@@ -55,7 +55,8 @@
             "func": "metric",
             "params": {
                 "func": "visual_dist",
-                "timesOfSigma": 1   
+                "res_home": "/Users/wangyun/repos/TCNE/res/lc/2019-01-19-11:26:03.447105",
+                "timesOfSigma": 3    
             }    
         }
    ] 

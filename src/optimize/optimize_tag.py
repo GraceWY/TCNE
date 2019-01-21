@@ -12,8 +12,9 @@ import pdb
 
 def params_handler(params, info, pre_res, **kwargs):
     # load training data
-    if ( "walk_file" not in params ) or ( not os.path.exists(params["walk_file"]) ):
+    if ( "tag_walker" in pre_res ) and ( "walk_file" in pre_res["tag_walker"] ):
         params["walk_file"] = pre_res["tag_walker"]["walk_file"]
+
     # set the embedding size
     params["embedding_model"]["embed_size"] = info["embed_size"]
     params["embedding_model"]["batch_size"] = params["batch_size"]
@@ -26,7 +27,6 @@ def params_handler(params, info, pre_res, **kwargs):
 def optimize(params, info, pre_res, **kwargs):
     res = params_handler(params, info, pre_res)
     
-    pdb.set_trace()
 
     G = dh.load_as_graph(params["walk_file"])
     params["embedding_model"]["num_nodes"] = len(G.nodes())
