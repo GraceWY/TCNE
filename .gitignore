@@ -114,7 +114,6 @@ venv.bak/
 tmp/
 res/
 log/
-data/
 *.swp
 
 # data
