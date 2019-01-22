@@ -16,7 +16,7 @@ FLOAT = tf.float32
 # Gaussian Embedding
 class NodeEmbedding(object):
     def __init__(self, params):
-        self.dim = params["embed_size"]
+        self.dim = params["tag_embed_size"]
         self.num_nodes = params["num_nodes"]
         self.spherical = params["spherical"]
         self.show_num = params["show_num"] # printing the loss per #show_num iterations
@@ -31,6 +31,7 @@ class NodeEmbedding(object):
 
         # whether to clip the range of mu and sigma for distribution
         self.normclip = False if "normclip" not in params else params["normclip"]
+        self.varclip = False if "varclip" not in params else params["varclip"]
 
         """ lower_sig: element-wise lower bound for sigma
             upper_sig: element-wise upper bound for sigma
@@ -121,13 +122,24 @@ class NodeEmbedding(object):
                 self.train_step = getattr(tf.train, self.optimizer)(self.lr).minimize(self.loss)
 
                 with tf.name_scope("clip_op"):
-                    def clip_ops_graph():
-                        def clip_val_ref(embedding, idxs):
-                            with tf.name_scope("clip_val"):
+                    """Clip variance
+                    """
+                    def clip_ops_graph_var():
+                        def clip_var_ref(embedding, idxs):
+                            with tf.name_scope("clip_var"):
                                 to_update = tf.nn.embedding_lookup(embedding, idxs)
                                 to_update = tf.maximum(lower_logsig, tf.minimum(upper_logsig, to_update))
                                 return tf.scatter_update(embedding, idxs, to_update)
 
+                        clip1 = clip_var_ref(self.logsig, self.u_id)
+                        clip2 = clip_var_ref(self.logsig_out, self.v_pos_id)
+                        clip3 = clip_var_ref(self.logsig_out, self.v_neg_id)
+
+                        return [clip1, clip2, clip3]
+
+                    """ Clip mu
+                    """
+                    def clip_ops_graph_norm():
                         def clip_norm_ref(embedding, idxs):
                             with tf.name_scope("clip_norm_ref"):
                                 to_update = tf.nn.embedding_lookup(embedding, idxs)
@@ -137,13 +149,11 @@ class NodeEmbedding(object):
                         clip1 = clip_norm_ref(self.mu, self.u_id)
                         clip2 = clip_norm_ref(self.mu_out, self.v_pos_id)
                         clip3 = clip_norm_ref(self.mu_out, self.v_neg_id)
-                        clip4 = clip_val_ref(self.logsig, self.u_id)
-                        clip5 = clip_val_ref(self.logsig_out, self.v_pos_id)
-                        clip6 = clip_val_ref(self.logsig_out, self.v_neg_id)
                         
-                        return [clip1, clip2, clip3, clip4, clip5, clip6]
+                        return [clip1, clip2, clip3]
 
-                    self.clip_op = clip_ops_graph()
+                    self.clip_op_norm = clip_ops_graph_norm()
+                    self.clip_op_var = clip_ops_graph_var()
 
 
     def train(self, get_batch):
@@ -159,8 +169,13 @@ class NodeEmbedding(object):
                 self.train_step.run(input_dict)
                 loss += self.loss.eval(input_dict)
 
+                # clip mu
                 if self.normclip:
-                    sess.run(self.clip_op, feed_dict=input_dict)
+                    sess.run(self.clip_op_norm, feed_dict=input_dict)
+
+                # clip var
+                if self.varclip:
+                    sess.run(self.clip_op_var, feed_dict=input_dict)
                 
                 if (i + 1) % self.show_num == 0:
                     print ("Epoch %d, Loss: %f" % (i+1, np.sum(loss / self.show_num)))
@@ -182,7 +197,7 @@ if __name__ == "__main__":
     params["learning_rate"] = 0.01
     params["optimizer"] = "AdamOptimizer"
     params["num_nodes"] = 100
-    params["embed_size"] = 32
+    params["tag_embed_size"] = 32
     params["Closs"] = 1.0
     params["spherical"] = False 
     params["fixvar"] = False

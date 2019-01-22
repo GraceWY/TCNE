@@ -16,7 +16,7 @@ def params_handler(params, info, pre_res, **kwargs):
         params["walk_file"] = pre_res["tag_walker"]["walk_file"]
 
     # set the embedding size
-    params["embedding_model"]["embed_size"] = info["embed_size"]
+    params["embedding_model"]["tag_embed_size"] = info["tag_embed_size"]
     params["embedding_model"]["batch_size"] = params["batch_size"]
     params["embedding_model"]["logger"] = info["logger"]
 

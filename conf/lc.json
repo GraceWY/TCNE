@@ -2,7 +2,7 @@
     "static_info" : {
         "random_seed": 157,
         "np_seed": 213,
-        "embed_size": 2,
+        "tag_embed_size": 2,
         "network_folder": {
             "name": "lc",
             "entity": "entity.dat",
@@ -37,7 +37,7 @@
                 "walk_file": "/Users/wangyun/repos/TCNE/data/lc/hybrid_walk_nums_path(100)_max_path_len(5).dat",
                 "batch_strategy": "weighted_edges_sampling",
                 "batch_size": 8,
-                "iterations": 1000,
+                "iterations": 500,
                 "embedding_model": {
                     "func": "gauss_embedding_model",
                     "learning_rate": 0.01,
@@ -47,7 +47,13 @@
                     "fixvar": false,
                     "wout": true,
                     "normclip": false,
-                    "show_num": 100   
+                    "varclip": false,
+                    "show_num": 100,
+                    "lower_sig": 0.02,
+                    "upper_sig": 5.0, 
+                    "norm_cap": 3.0,
+                    "mu_scale": 1,
+                    "var_scale": 0.05   
                 }
             }
         },
@@ -55,7 +61,7 @@
             "func": "metric",
             "params": {
                 "func": "visual_dist",
-                "timesOfSigma": 1   
+                "timesOfSigma": 1
             }    
         }
    ] 

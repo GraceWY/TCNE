@@ -10,11 +10,11 @@ import pdb
 
 
 def params_handler(params, info):
-    if "res_home" in info:
+    if "res_home" not in params:
         params["res_home"] = info["res_home"]
 
     if "timesOfSigma" not in params:
-        params["timesOfSigma"] = 3
+        params["timesOfSigma"] = 1 
 
     return {}
 
