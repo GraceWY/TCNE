@@ -3,6 +3,7 @@ import sys
 import re
 import networkx as nx
 import json
+import pickle
 import numpy as np
 from datetime import datetime
 
@@ -117,7 +118,21 @@ class DataHandler(object):
                 mat.append([float(i) for i in items[1].split()])
                 
         return np.array(mat, dtype=FLOAT), row2name 
+    
+    @staticmethod
+    def load_embedding(file_name):
+        '''
+        load embedding from file name 
+        '''
+        embedding = pickle.load(file_name)
+        return embedding
 
+    @staticmethod
+    def load_ground_truth(file_name):
+        '''load label for task node classification'''
+        ground_truth =  pickle.load(file_name)
+        return ground_truth
+        
 if __name__ == "__main__":
     f = "tmp.txt"
     mp = {"1": [1, 1], "2": [2, 2]}
