@@ -4,6 +4,7 @@ import time
 import logging
 from datetime import datetime
 from sklearn.decomposition import PCA
+import tensorflow as tf
 import numpy as np
 import pdb
 
@@ -74,6 +75,11 @@ def reduce_dist_dim(mus, std_sigs, dim):
     de_std_sigs = pca.transform(std_sigs)
     return de_mus, de_std_sigs
 
+
+def glorot_init(shape, _dtype, name=None):
+    init_range = np.sqrt(6.0/(shape[0]+shape[1]))
+    initial = tf.random_uniform(shape, minval=-init_range, maxval=init_range, dtype=_dtype)
+    return tf.Variable(initial, name=name)
 
 if __name__ == "__main__":
     X = np.array([[1, 1, 1], [2, 2, 2], [3, 3, 3], [4, 4, 4]])
