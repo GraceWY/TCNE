@@ -13,18 +13,21 @@ from sklearn.linear_model import SGDClassifier
 from utils import common_tools as ct
 from utils.data_handler import DataHandler as dh
 from utils.draw_graph import DrawGraph as dg
-
-
-import pdb
+from utils.lib_ml import MachineLearningLib as mll
+from utils.env import *
 
 def classification(X, params):
     X_scaled = scale(X)
-    y = dh.load_ground_truth(params["ground_truth"])
+    ground_truth_path=os.path.join(DATA_PATH,params["data"],params["ground_truth"])
+    y = dh.load_ground_truth(ground_truth_path)
     y = y[:len(X)]
+    #print(X_scaled.shape)
+    print(len(y))
+    print("y_0=",y[0])
     acc = 0.0
     micro_f1 = 0.0
     macro_f1 = 0.0
-    for _ in xrange(params["times"]):
+    for _ in range(params["times"]):
         X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size = params["test_size"], stratify = y)
         clf = getattr(mll, params["model"]["func"])(X_train, y_train, params["model"])
         ret = mll.infer(clf, X_test, y_test)
@@ -49,8 +52,9 @@ def params_handler(params, info):
 def metric(params, info, pre_res, **kwargs):
     res = params_handler(params, info)
 
-    # load embeddings    
-    X = dh.load_embedding(params["embeddings_file"])
+    # load embeddings 
+    embedding_path=os.path.join(DATA_PATH,"experiment",params["embeddings_file"])
+    X = dh.load_embedding(embedding_path,params["file_type"])
     
     # results include: accuracy, micro f1, macro f1
     metric_res = classification(X, params)

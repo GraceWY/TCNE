@@ -120,17 +120,31 @@ class DataHandler(object):
         return np.array(mat, dtype=FLOAT), row2name 
     
     @staticmethod
-    def load_embedding(file_name):
+    def load_embedding(file_path,file_type):
         '''
         load embedding from file name 
         '''
-        embedding = pickle.load(file_name)
+        if file_type == "pickle":
+            embedding = pickle.load(file_name)
+        elif file_type == "txt":
+            with open(file_path,'r') as f:
+                lines = f.readlines()
+                line_num=len(lines)
+                node_number,dim=lines[0].split()
+                node_number=int(node_number)
+                dim=int(dim)
+                embedding=np.zeros((node_number,dim))
+                for i in range(1,line_num):
+                    x=lines[i].split()
+                    embedding[int(x[0]),:]=list(map(float,x[1:]))
+
         return embedding
 
     @staticmethod
     def load_ground_truth(file_name):
         '''load label for task node classification'''
-        ground_truth =  pickle.load(file_name)
+        with open(file_name,'r') as f:
+            ground_truth=f.readlines()
         return ground_truth
         
 if __name__ == "__main__":
