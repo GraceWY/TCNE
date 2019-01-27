@@ -44,6 +44,9 @@ class NodeEmbedding(object):
         self.optimizer = params["optimizer"]
         self.lr = params["learning_rate"]
         self.logger = params["logger"]
+        fn = "ckpt/GaussEmbedding_dim(%d)_numnodes(%d)_wout(%r)_spherical(%r)_normClip(%r)_varclip(%r)" \
+                % (self.dim, self.num_nodes, self.wout, self.spherical, self.normclip, self.varclip)
+        self.model_save_path = os.path.join(params["res_home"], fn)
 
 
     def build_graph(self):
@@ -57,8 +60,12 @@ class NodeEmbedding(object):
         self.tensor_graph = tf.Graph()
         with self.tensor_graph.as_default():
             tf.set_random_seed(random.randint(0, 1e9))
+
+            # save model
+            saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="GaussEmbedding/Variable"))
+
             with tf.name_scope("GaussEmbedding"):
-                with tf.name_scope("input"):
+                with tf.name_scope("Input"):
                     self.u_id = tf.placeholder(name="u_id", dtype=INT, shape=[None])
                     self.v_pos_id = tf.placeholder(name="vpos_id", dtype=INT, shape=[None])
                     self.v_neg_id = tf.placeholder(name="vneg_id", dtype=INT, shape=[None])
@@ -121,7 +128,7 @@ class NodeEmbedding(object):
 
                 self.train_step = getattr(tf.train, self.optimizer)(self.lr).minimize(self.loss)
 
-                with tf.name_scope("clip_op"):
+                with tf.name_scope("ClipOp"):
                     """Clip variance
                     """
                     def clip_ops_graph_var():
@@ -182,7 +189,10 @@ class NodeEmbedding(object):
                     self.logger.info("Epoch %d, Loss: %f\n" % (i+1, np.sum(loss / self.show_num)))
                     loss = 0.0
 
-            return np.array(sess.run(self.mu)), np.array(sess.run(self.logsig))
+                    # save model
+                    saver.save(sess, self.model_save_path, global_step=i+1)
+
+            return self.model_save_path, np.array(sess.run(self.mu)), np.array(sess.run(self.logsig))
 
     def show_graph(self):
         with tf.Session(graph = self.tensor_graph) as sess:

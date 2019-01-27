@@ -30,6 +30,7 @@ def optimize(params, info, pre_res, **kwargs):
 
     G = dh.load_as_graph(params["walk_file"])
     params["embedding_model"]["num_nodes"] = len(G.nodes())
+    params["embedding_model"]["res_home"] = info["res_home"]
 
     # model init
     print ("[+] The embedding model is model.%s" % (params["embedding_model"]["func"]))
@@ -45,7 +46,7 @@ def optimize(params, info, pre_res, **kwargs):
     bs = bs_handler.BatchStrategy(G, params)
 
     # train model
-    mus, logsigs = model.train(bs.get_batch)
+    res["model_save_path"], mus, logsigs = model.train(bs.get_batch)
     sigs = np.exp(logsigs)
 
     # map the the mus and sigs with their name according to G 
