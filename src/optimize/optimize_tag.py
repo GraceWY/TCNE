@@ -32,11 +32,15 @@ def optimize(params, info, pre_res, **kwargs):
     params["embedding_model"]["num_nodes"] = len(G.nodes())
     params["embedding_model"]["res_home"] = info["res_home"]
 
+    # get_feature
+    gf_handler = __import__("get_features." + params["get_features"], fromlist = ["get_features"])
+    features = gf_handler.get_features()
+
     # model init
     print ("[+] The embedding model is model.%s" % (params["embedding_model"]["func"]))
     info["logger"].info("[+] The embedding model is model.%s\n" % (params["embedding_model"]["func"]))
     model_handler = __import__("model." + params["embedding_model"]["func"], fromlist = ["model"])
-    model = model_handler.NodeEmbedding(params["embedding_model"])
+    model = model_handler.NodeEmbedding(params["embedding_model"], features)
     model.build_graph()
 
     # get_batch generator
@@ -45,6 +49,7 @@ def optimize(params, info, pre_res, **kwargs):
     bs_handler = __import__("batch_strategy." + params["batch_strategy"], fromlist=["batch_strategy"])
     bs = bs_handler.BatchStrategy(G, params)
 
+    
     # train model
     res["model_save_path"], mus, logsigs = model.train(bs.get_batch)
     sigs = np.exp(logsigs)

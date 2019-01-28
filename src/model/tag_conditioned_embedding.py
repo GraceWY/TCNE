@@ -23,7 +23,14 @@ class Aggregator(object):
 class TagConditionedEmbedding(object):
     """ Tag conditioned Network Embedding
     """
-    def __init__(self, params):
+    def __init__(self, params, features):
+
+        """ agg parameters
+        """
+        self.agg_neighbor_num = params["agg_neighbor_num"]
+        self.feature_num = params["feature_num"]
+        self.layer1_weight_dim = params["layer1_weight_dim"]
+        self.features = features
 
         """ entity embedding parameters
         """
@@ -199,8 +206,28 @@ class TagConditionedEmbedding(object):
                         "p_noise": tf.placeholder(name="pos_noise", dtype=FLOAT, shape=[None, self.tag_num, self.tag_embed_size]),
                         "n_id": tf.placeholder(name="neg_id", dtype=INT, shape=[None]), # negative
                         "n_t": tf.placeholder(name="neg_tag", dtype=INT, shape=[None, self.tag_num]),
-                        "n_noise": tf.placeholder(name="neg_noise", dtype=FLOAT, shape=[None, self.tag_num, self.tag_embed_size])
+                        "n_noise": tf.placeholder(name="neg_noise", dtype=FLOAT, shape=[None, self.tag_num, self.tag_embed_size]),
+                        "u_neighbors": tf.placeholder(name = "u_neighbors", dtype = INT, shape = [None, self.agg_neighbor_num]),
+                        "p_neighbors": tf.placeholder(name = "p_neighbors", dtype = INT, shape = [None, self.agg_neighbor_num]),
+                        "n_neighbors": tf.placeholder(name = "n_neighbors", dtype = INT, shape = [None, self.agg_neighbor_num]),
                     }
+                
+                with tf.name_scope("Aggregator"):
+                    self.W_agg1 = ct.glorot_init([self.feature_num, self.layer1_weight_dim], FLOAT, name="W_agg1")
+                    self.feature_mat = tf.constant(self.features, dtype = FLOAT, name = "feature_mat")
+                    
+                    def AGG(en_ids, neighbors):
+                        # batch_size * feature_num
+                        u_emd = tf.nn.embedding_lookup(self.feature_mat, en_ids)
+                        # batch_size * agg_neighbor_num * feature_num
+                        neighbors_emd = tf.nn.embedding_lookup(self.feature_mat, neighbors)
+                        neighbors_emd_reshape = tf.reshape(neighbors_emd, [-1, self.feature_num])
+                        neigbors_agg_3d = tf.matmul(neighbors_emd_reshape, self.W_agg1)
+                        h1_pre = tf.reduce_sum(neigbors_agg_3d, axis=1)
+                        h1 = tf.nn.leaky_relu(h1_pre, alpha=0.01)
+                        return h1
+
+
 
                 def INFER(_en_ids, _tag_mask, _tag_noise):
                     """ en_ids: (batch_size x k)  (# of negative sampling)
