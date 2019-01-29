@@ -46,7 +46,3 @@ class BatchStrategy(object):
                 idx = self.node_sampler.sample()
                 batch_v_neg.append(self.nodes[idx])
             yield np.array(batch_u, dtype=INT), np.array(batch_v_pos, dtype=INT), np.array(batch_v_neg, dtype=INT)
-
-
-
-

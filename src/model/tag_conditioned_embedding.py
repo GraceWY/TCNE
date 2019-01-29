@@ -293,20 +293,23 @@ class TagConditionedEmbedding(object):
 
             for i, batch in enumerate(get_batch()):
                 tag_input_dict = {
-                    self.tag_placeholders["u_id"]: batch["t_u_id"],
-                    self.tag_placeholders["p_id"]: batch["t_p_id"],
-                    self.tag_placeholders["n_id"]: batch["t_n_id"]
+                    self.tag_placeholders["u_id"]: batch["tag_u"],
+                    self.tag_placeholders["p_id"]: batch["tag_v"],
+                    self.tag_placeholders["n_id"]: batch["tag_n"]
                 }
                 en_input_dict = {
-                    self.entity_placeholders["u_id"]: batch["e_u_id"],
-                    self.entity_placeholders["p_id"]: batch["e_p_id"],
-                    self.entity_placeholders["n_id"]: batch["e_n_id"],
-                    self.entity_placeholders["u_t"]: batch["e_u_t"],
-                    self.entity_placeholders["p_t"]: batch["e_p_t"],
-                    self.entity_placeholders["n_t"]: batch["e_n_t"],
-                    self.entity_placeholders["u_noise"]: batch["e_u_noise"],
-                    self.entity_placeholders["p_noise"]: batch["p_u_noise"],
-                    self.entity_placeholders["n_noise"]: batch["n_u_noise"]
+                    self.entity_placeholders["u_id"]: batch["en_u"],
+                    self.entity_placeholders["p_id"]: batch["en_v"],
+                    self.entity_placeholders["n_id"]: batch["en_n"],
+                    self.entity_placeholders["u_t"]: batch["en_u_mask"],
+                    self.entity_placeholders["p_t"]: batch["en_v_mask"],
+                    self.entity_placeholders["n_t"]: batch["en_n_mask"],
+                    self.entity_placeholders["u_noise"]: batch["en_u_noise"],
+                    self.entity_placeholders["p_noise"]: batch["en_v_noise"],
+                    self.entity_placeholders["n_noise"]: batch["en_n_noise"],
+                    self.entity_placeholders["u_neighbors"]: batch["en_u_neighbors"],
+                    self.entity_placeholders["v_neighbors"]: batch["en_v_neighbors"],
+                    self.entity_placeholders["n_neighbors"]: batch["en_n_neighbors"]
                 }
 
                 input_dict = {}

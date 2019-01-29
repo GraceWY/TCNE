@@ -16,6 +16,9 @@ class BatchStrategy(object):
         """
         self.iterations = params["iterations"]
         self.batch_size = params["batch_size"]
+        self.nce_k = params["nce_k"]
+        self.tag_num = params["tag_num"]
+        self.tag_embed_size = params["tag_embed_size"]
         self.edges = G.edges()
         self.nodes = G.nodes()
         edge_probs = []
@@ -32,6 +35,7 @@ class BatchStrategy(object):
         #    node_probs.append(G.degree(n))
         #self.node_sampler = at(node_probs)
 
+        # for sampling v_neg
         degree = {}
         def dict_add(dic, k, v):
             if k in dic:
@@ -46,6 +50,7 @@ class BatchStrategy(object):
             node_probs.append(degree[n])
         self.node_sampler = at(nodes_probs)
 
+        # for sampling neighbors
         self.conditional_node_sampler = {}
         self.conditional_node_lst = {}
         for n in self.nodes:
@@ -56,18 +61,67 @@ class BatchStrategy(object):
                 self.conditional_node_lst[n].append(v)
             self.conditional_node_sampler[n] = at(tmp)
 
+    def sampling_unit(self, u):
+        """
+        """
+        mask = [self.G.nodes[u]["tags"][i] for i in xrange(self.tag_num)]
+        noise = np.random.normal(size = [self.tag_num, self.tag_embed_size])
+        neighbors = []
+        for i in xrange(self.agg_neighbor_num):
+            idx = self.conditional_node_sampler[u].sample()
+            neighbors.append(self.conditional_node_lst[u][idx])
+        return mask, noise, neighbors
 
     def get_batch(self):
         """
         """
         for _ in range(self.iterations):
             batch_u = []
-            batch_v_pos = []
-            batch_v_neg = []
+            batch_u_mask = []
+            batch_u_noise = []
+            batch_u_neighbors = []
+            batch_v = []
+            batch_v_mask = []
+            batch_v_noise = []
+            batch_v_neighbors = []
+            batch_n = []
+            batch_n_mask = []
+            batch_n_noise = []
+            batch_n_neighbors = []
             for _ in range(self.batch_size):
                 idx = self.edge_sampler.sample()
-                batch_u.append(self.edges[idx][0])
-                batch_v_pos.append(self.edges[idx][1])
-                idx = self.node_sampler.sample()
-                batch_v_neg.append(self.nodes[idx])
-            yield np.array(batch_u, dtype=INT), np.array(batch_v_pos, dtype=INT), np.array(batch_v_neg, dtype=INT)
+                u, v = self.edges[idx][0], self.edges[idx][1]
+                batch_u.append(u)
+                batch_v.append(v)
+                mask, noise, neighbors = self.sample_unit(u)
+                batch_u_mask.append(mask)
+                batch_u_noise.append(noise)
+                batch_u_neighbors.append(neighbors)
+                
+                mask, noise, neighbors = self.sample_unit(v)
+                batch_v_mask.append(mask)
+                batch_v_noise.append(noise)
+                batch_v_neighbors.append(neighbors)
+
+                for _ in xrange(self.nce_k)
+                    idx = self.node_sampler.sample()
+                    n = self.nodes[idx]
+                    batch_n.append(n)
+                    mask, noise, neighbors = self.sample_unit(n)
+                    batch_n_mask.append(mask)
+                    batch_n_noise.append(noise)
+                    batch_n_neighbors.append(neighbors)
+
+                
+            yield {"u" : np.array(batch_u, dtype=INT),
+                    "u_mask" : np.array(batch_u_mask, dtype=INT),
+                    "u_noise" : np.array(batch_u_noise, dtype=FLOAT),
+                    "u_neighbors" : np.array(batch_u_neighbors, dtype = INT),
+                    "v" : np.array(batch_v, dtype=INT),
+                    "v_mask" : np.array(batch_v_mask, dtype=INT),
+                    "v_noise" : np.array(batch_v_noise, dtype=FLOAT),
+                    "v_neighbors" : np.array(batch_v_neighbors, dtype = INT),
+                    "n" : np.array(batch_n, dtype=INT),
+                    "n_mask" : np.array(batch_n_mask, dtype=INT),
+                    "n_noise" : np.array(batch_n_noise, dtype=FLOAT),
+                    "n_neighbors" : np.array(batch_n_neighbors, dtype = INT)}
