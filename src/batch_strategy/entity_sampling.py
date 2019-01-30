@@ -64,7 +64,7 @@ class BatchStrategy(object):
     def sampling_unit(self, u):
         """
         """
-        mask = [self.G.nodes[u]["tags"][i] for i in xrange(self.tag_num)]
+        mask = [self.G.node[u]["tags"][i] for i in xrange(self.tag_num)]
         noise = np.random.normal(size = [self.tag_num, self.tag_embed_size])
         neighbors = []
         for i in xrange(self.agg_neighbor_num):

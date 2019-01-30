@@ -8,13 +8,13 @@ def get_output_details(HG, G, path):
 
 
 def get_output(HG, path):
-    tag1, tag2 = HG.node[path[0]]["name"], HG.node[path[-1]]["name"]
+    tag1, tag2 = HG.node[path[0]]["oid"], HG.node[path[-1]]["oid"]
     if tag1 >= tag2:
         tag1, tag2 = tag2, tag1
     return tag1 + "\t" + tag2
 
 def get_simrank_output(HG,node1,node2):
-    tag1, tag2 = HG.node[node1]["name"], HG.node[node2]["name"]
+    tag1, tag2 = HG.node[node1]["oid"], HG.node[node2]["oid"]
     if tag1 >= tag2:
         tag1, tag2 = tag2, tag1
     return tag1 + "\t" + tag2

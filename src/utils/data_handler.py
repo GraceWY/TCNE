@@ -6,6 +6,9 @@ import json
 import pickle
 import numpy as np
 from datetime import datetime
+from sklearn.preprocessing import MultiLabelBinarizer
+
+import pdb
 
 FLOAT = np.float32
 
@@ -31,6 +34,7 @@ class DataHandler(object):
                 items[2] = float(items[2]) # edge weight
                 lst.append(items)
         return lst
+
 
     @staticmethod
     def load_name(file_path):
@@ -61,31 +65,67 @@ class DataHandler(object):
             s = re.sub('\s', "", s)
         return json.loads(s)
 
+
     @staticmethod
-    def load_as_graph(file_path):
-        """ Load walk file {str, str, float}
+    def load_edge_as_graph(file_path, name_path):
+        """ Load walk file {int, int, float}
+            name path: {string, id}
             Return networkx G
         """
         lst = []
-        mp = dict()
         G = nx.Graph()
-        cur = 0
+        id2name = DataHandler.load_name(name_path)
+
         with open(file_path, "r") as f:
             for line in f:
                 line = line.strip()
                 if len(line) == 0:
                     continue
-                items = line.split("\t")
-                if items[0] not in mp:
-                    mp[items[0]] = cur
-                    G.add_node(cur, {"name": items[0]})
-                    cur += 1
-                if items[1] not in mp:
-                    mp[items[1]] = cur
-                    G.add_node(cur, {"name": items[1]})
-                    cur += 1
+                items = line.split()
+                fid = int(items[0])
+                G.add_node(fid, {"name": id2name[fid]})
+                tid = int(items[1])
+                G.add_node(tid, {"name": id2name[tid]})
                 w = 1.0 if len(items) < 3 else float(items[2])
-                G.add_edge(mp[items[0]], mp[items[1]], weight=w)
+                G.add_edge(fid, tid, weight=w)
+        return G
+
+
+    @staticmethod
+    def load_entity_as_graph(entity_edge_path, entity2tag_path, entity_name_path):
+        """ entity_path: {int , int} (fid, tid)
+            tag_entity_path: {int, int} (entity_id, tag_id)
+            entity_name_path: {str, int} (entity name, id)
+
+            Return entity networkx G with tag_id_binary_vector as G.nodes[id]["tags"]
+        """
+        pdb.set_trace()
+        G = DataHandler.load_edge_as_graph(entity_edge_path, entity_name_path)
+
+        # load tag 01 vector for each entity
+        mp = dict()
+        with open(entity2tag_path, "r") as f:
+            for line in f:
+                line = line.strip()
+                if len(line) == 0:
+                    continue
+                items = line.split()
+                eid, tid = int(items[0]), int(items[1])
+
+                if eid not in mp:
+                    mp[eid] = []
+                mp[eid].append(tid)
+
+        lst = [[] for _ in range(len(G.nodes()))] 
+        for k in mp.keys():
+            lst[k] = mp[k]
+
+        mlb = MultiLabelBinarizer()
+        mat = mlb.fit_transform(lst)
+
+        for n in G.nodes():
+            G.node[n]["tags"] = mat[n]
+
         return G
 
 
@@ -148,7 +188,8 @@ class DataHandler(object):
         return ground_truth
         
 if __name__ == "__main__":
-    f = "tmp.txt"
-    mp = {"1": [1, 1], "2": [2, 2]}
-    DataHandler.save_dict(mp, f)
-    
+    folder = "/Users/wangyun/repos/TCNE/data/lc" 
+    entity_edge_path = os.path.join(folder, "edge.dat")
+    entity2tag_path = os.path.join(folder, "mix_edge.dat")
+    entity_name_path = os.path.join(folder, "entity.dat")
+    DataHandler.load_entity_as_graph(entity_edge_path, entity2tag_path, entity_name_path)

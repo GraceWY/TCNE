@@ -6,7 +6,7 @@ import numpy as np
 
 from batch_strategy.alias_table_sampling import AliasTable as at
 from batch_strategy.weighted_edges_sampling import BacthStrategy as bs_tag
-from batch_strategy.entity__sampling import BacthStrategy as bs_en
+from batch_strategy.entity_sampling import BacthStrategy as bs_en
 
 import pdb
 

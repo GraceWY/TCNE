@@ -26,21 +26,17 @@ def params_handler(params, info, pre_res, **kwargs):
 @ct.module_decorator
 def optimize(params, info, pre_res, **kwargs):
     res = params_handler(params, info, pre_res)
-    
 
-    G = dh.load_as_graph(params["walk_file"])
+    G = dh.load_edge_as_graph(params["walk_file"], os.path.join(info["network_folder"]["name"], info["network_folder"]["tag"]))
     params["embedding_model"]["num_nodes"] = len(G.nodes())
     params["embedding_model"]["res_home"] = info["res_home"]
-
-    # get_feature
-    gf_handler = __import__("get_features." + params["get_features"], fromlist = ["get_features"])
-    features = gf_handler.get_features()
 
     # model init
     print ("[+] The embedding model is model.%s" % (params["embedding_model"]["func"]))
     info["logger"].info("[+] The embedding model is model.%s\n" % (params["embedding_model"]["func"]))
     model_handler = __import__("model." + params["embedding_model"]["func"], fromlist = ["model"])
-    model = model_handler.NodeEmbedding(params["embedding_model"], features)
+    # model = model_handler.NodeEmbedding(params["embedding_model"], features)
+    model = model_handler.NodeEmbedding(params["embedding_model"])
     model.build_graph()
 
     # get_batch generator

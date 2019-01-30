@@ -5,20 +5,6 @@ import tensorflow as tf
 INT=tf.int32
 FLOAT=tf.float32
 
-class Aggregator(object):
-    """ AGG network
-    """
-    def __init__(self, placeholders, features, adj):
-        self.dropout = dropout 
-        self.bias = bias
-        
-        if neigh_input_dim is None:
-            neigh_input_dim = input_dim
-
-
-    def build_graph(tensor_graph, inputs):
-        self.vars["neigh_"]
-
 
 class TagConditionedEmbedding(object):
     """ Tag conditioned Network Embedding
@@ -27,45 +13,44 @@ class TagConditionedEmbedding(object):
 
         """ agg parameters
         """
-        self.agg_neighbor_num = params["agg_neighbor_num"]
-        self.feature_num = params["feature_num"]
-        self.layer1_weight_dim = params["layer1_weight_dim"]
+        self.agg_neighbor_num = params["aggregator"]["agg_neighbor_num"]
+        self.feature_num = params["aggregator"]["feature_num"]
+        self.layer1_weight_dim = params["aggregator"]["layer1_weight_dim"]
         self.features = features
 
         """ entity embedding parameters
         """
         self.en_embed_size = params["en_embed_size"]
         self.en_num = params["en_num"]
-        self.double_layer = params["aggregator"]["double_layer"]
         self.nec_k = params["generative_net"]["nce_k"]
 
         """ tag embedding parameters
         """
         self.tag_embed_size = params["tag_embed_size"]
         self.tag_num = params["tag_num"] 
-        self.spherical = params["spherical"]
-        self.tag_trainable = params["tag_trainable"]
+        self.spherical = params["tag_embedding"]["spherical"]
+        self.tag_trainable = params["tag_embedding"]["tag_trainable"]
 
         self.tag_pre_train = ""
-        if "tag_pre_train" in params:
-            self.tag_pre_train = params["tag_pre_train"] # whether use pretrain parameters
+        if "tag_pre_train" in params["tag_embedding"]:
+            self.tag_pre_train = params["tag_embedding"]["tag_pre_train"] # whether use pretrain parameters
 
         # The constant in margin-based loss
-        self.Closs = 1.0 if "Closs" not in params else params["Closs"]
+        self.Closs = 1.0 if "Closs" not in params["tag_embedding"] else params["tag_embedding"]["Closs"]
         # whether the w and c use the uniform parameters
-        self.wout = False if "wout" not in params else params["wout"] 
+        self.wout = False if "wout" not in params["tag_embedding"] else params["tag_embedding"]["wout"] 
 
         # whether to clip the range of mu and sigma for distribution
-        self.normclip = False if "normclip" not in params else params["normclip"]
-        self.varclip = False if "varclip" not in params else params["varclip"]
+        self.normclip = False if "normclip" not in params["tag_embedding"] else params["tag_embedding"]["normclip"]
+        self.varclip = False if "varclip" not in params["tag_embedding"] else params["tag_embedding"]["varclip"]
 
         """ lower_sig: element-wise lower bound for sigma
             upper_sig: element-wise upper bound for sigma
             norm_cap: upper bound of norm of mu
         """
         self.lower_sig, self.upper_sig, self.norm_cap, self.mu_scale, self.var_scale = 0.02, 5.0, 3.0, 1, 0.05
-        if "lower_sig" in params:
-            self.lower_sig, self.upper_sig, self.norm_cap, self.mu_scale, self.var_scale = params["lower_sig"], params["upper_sig"], params["norm_cap"], params["mu_scale"], params["var_scale"] 
+        if "lower_sig" in params["tag_embedding"]:
+            self.lower_sig, self.upper_sig, self.norm_cap, self.mu_scale, self.var_scale = params["tag_embedding"]["lower_sig"], params["tag_embedding"]["upper_sig"], params["tag_embedding"]["norm_cap"], params["tag_embedding"]["mu_scale"], params["tag_embedding"]["var_scale"] 
 
 
         # model paramters
@@ -80,7 +65,6 @@ class TagConditionedEmbedding(object):
 
 
     def build_graph(self):
-
         # parameter for Gaussian Embedding
         mu_scale = self.mu_scale * math.sqrt(3.0/(1.0 * self.tag_embed_size))
         logvar_scale = math.log(self.var_scale)
@@ -228,7 +212,6 @@ class TagConditionedEmbedding(object):
                         return h1
 
 
-
                 def INFER(_en_ids, _tag_mask, _tag_noise):
                     """ en_ids: (batch_size x k)  (# of negative sampling)
                         tag_mask: (batch_size x k) x tag_num
@@ -337,4 +320,20 @@ class TagConditionedEmbedding(object):
                     model_saver.save(sess, self.model_save_path, global_step=i+1)
 
             return self.model_save_path
+
+
+    def infer(self, inputs):
+        print ("[+] start infer node embedding ...")
+        self.logger.info("[+] start infer node embedding ...\n")
+
+        with tf.Session(graph=self.tensor_graph) as sess:
+            sess.run(tf.global_variables_initializer())
+
+            input_dict = {
+                    self.entity_placeholders["u_id"]: inputs["ids"],
+                    self.entity_placeholders["u_t"]: inputs["tag"],
+                    self.entity_placeholders["u_noise"]: inputs["noise"]
+            }
+
+            return sess.run(self.u_y, feed_dict=input_dict)
 
