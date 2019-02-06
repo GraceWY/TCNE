@@ -160,7 +160,7 @@ class DataHandler(object):
         return np.array(mat, dtype=FLOAT), row2name 
     
     @staticmethod
-    def load_embedding(file_path,file_type):
+    def load_embedding(file_path,file_type,node_num=0):
         '''
         load embedding from file name 
         '''
@@ -173,9 +173,12 @@ class DataHandler(object):
                 node_number,dim=lines[0].split()
                 node_number=int(node_number)
                 dim=int(dim)
-                embedding=np.zeros((node_number,dim))
+                embedding=np.zeros((node_num,dim))
+                print(embedding.shape)
                 for i in range(1,line_num):
                     x=lines[i].split()
+                    if int(x[0])==11725: continue
+                    if int(x[0])==0: print("found")
                     embedding[int(x[0]),:]=list(map(float,x[1:]))
 
         return embedding
@@ -183,8 +186,9 @@ class DataHandler(object):
     @staticmethod
     def load_ground_truth(file_name):
         '''load label for task node classification'''
-        with open(file_name,'r') as f:
-            ground_truth=f.readlines()
+        ground_truth_file=open(file_name,'r',encoding = 'gb2312')
+        ground_truth=ground_truth_file.readlines()
+        ground_truth_file.close()
         return ground_truth
         
 if __name__ == "__main__":
