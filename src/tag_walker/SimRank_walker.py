@@ -22,9 +22,16 @@ def tag_walker(params, info, pre_res, **kwargs):
         info: the whole params of the model
         pre_res: the results from the previous modules, for this case is HG, G
     """
+    
     res = params_handler(params,info,pre_res)
-    res["walk_file"] = os.path.join(info["network_folder"]["name"], "SimRank_walker.dat")
-    res["walk_file_details"] = os.path.join(info["network_folder"]["name"], "SimRank_walker_details.dat")
+
+    prefix = "simrank_iter(%d)_eps(%d)_r(%d)" % (params["max_iter"], params["eps"],params["r"])
+    res["walk_file_details"] = os.path.join(info["network_folder"]["name"], "%s_details.dat"%(prefix))
+    res["walk_file"] = os.path.join(info["network_folder"]["name"], "%s.dat"%(prefix))
+
+
+    #res["walk_file"] = os.path.join(info["network_folder"]["name"], "SimRank_walker.dat")
+    #res["walk_file_details"] = os.path.join(info["network_folder"]["name"], "SimRank_walker_details.dat")
     # assert not os.path.exists(res["walk_file"]), "the walk file has existed!"
 
     # if the file has existed, return directly
