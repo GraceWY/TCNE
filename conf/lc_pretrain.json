@@ -5,12 +5,12 @@
         "tag_embed_size": 2,
         "en_embed_size": 32,
         "network_folder": {
-            "name": "lc",
-            "entity": "entity.dat",
-            "tag": "tag.dat",
-            "edge": "edge.dat",
-            "mix_edge": "mix_edge.dat",
-            "entity_features": "entity_feature.dat",
+            "name": "leetcode",
+            "entity": "node.txt",
+            "tag": "tag.txt",
+            "edge": "edge.txt",
+            "mix_edge": "tag-edge.txt",
+            "entity_features": "leetcode.json",
             "label": "label.dat"
         }
     },    
