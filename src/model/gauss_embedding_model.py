@@ -62,7 +62,7 @@ class NodeEmbedding(object):
             tf.set_random_seed(random.randint(0, 1e9))
 
             # save model
-            saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="GaussEmbedding/Variable"))
+            #saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="GaussEmbedding/Variable"))
 
             with tf.name_scope("GaussEmbedding"):
                 with tf.name_scope("Input"):
@@ -190,7 +190,7 @@ class NodeEmbedding(object):
                     loss = 0.0
 
                     # save model
-                    saver.save(sess, self.model_save_path, global_step=i+1)
+                    #saver.save(sess, self.model_save_path, global_step=i+1)
 
             return self.model_save_path, np.array(sess.run(self.mu)), np.array(sess.run(self.logsig))
 
