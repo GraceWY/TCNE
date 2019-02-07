@@ -1,6 +1,14 @@
 import os
 import sys
 import tensorflow as tf
+import math
+import random
+import numpy as np
+
+from utils import common_tools as ct
+from utils.data_handler import DataHandler as dh
+
+import pdb
 
 INT=tf.int32
 FLOAT=tf.float32
@@ -15,19 +23,18 @@ class TagConditionedEmbedding(object):
         """
         self.agg_neighbor_num = params["aggregator"]["agg_neighbor_num"]
         self.feature_num = params["aggregator"]["feature_num"]
-        self.layer1_weight_dim = params["aggregator"]["layer1_weight_dim"]
         self.features = features
 
         """ entity embedding parameters
         """
         self.en_embed_size = params["en_embed_size"]
         self.en_num = params["en_num"]
-        self.nec_k = params["generative_net"]["nce_k"]
+        self.nce_k = params["generative_net"]["nce_k"]
 
         """ tag embedding parameters
         """
         self.tag_embed_size = params["tag_embed_size"]
-        self.tag_num = params["tag_num"] 
+        self.tag_num = params["tag_num"]
         self.spherical = params["tag_embedding"]["spherical"]
         self.tag_trainable = params["tag_embedding"]["tag_trainable"]
 
@@ -54,14 +61,18 @@ class TagConditionedEmbedding(object):
 
 
         # model paramters
+        self.output_embed_size = params["output_embed_size"]
         self.lr = params["learning_rate"]
         self.optimizer = params["optimizer"]
         self.batch_size = params["batch_size"]
-        self.lambda = params["lambda"]
+        self._lambda = params["lambda"]
         self.show_num = params["show_num"] 
-        fn = "ckpt/TCNE_TagNum($d)_TagEmbedSize(%d)_EnNum(%d)_EnEmbedSize(%d)_spherical(%r)" \
+        self.logger = params["logger"]
+        fn = "ckpt/TCNE_TagNum(%d)_TagEmbedSize(%d)_EnNum(%d)_EnEmbedSize(%d)_spherical(%r)" \
                 % (self.tag_num, self.tag_embed_size, self.en_num, self.en_embed_size, self.spherical)
         self.model_save_path = os.path.join(params["res_home"], fn)
+
+        self.tensor_graph = tf.Graph()
 
 
     def build_graph(self):
@@ -73,11 +84,10 @@ class TagConditionedEmbedding(object):
 
         with self.tensor_graph.as_default():
             tf.set_random_seed(random.randint(0, 1e9))
+
+            def clip_by_min(tensor, _min=1e-3):
+                return tf.clip_by_value(tensor, _min, float("inf"))
             
-            # Add ops to save and restore all the variables
-            tag_saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="GaussEmbedding/Variable"))
-            
-            model_saver = tf.train.Saver()
 
             with tf.name_scope("GaussEmbedding"):
                 with tf.name_scope("Input"):
@@ -127,16 +137,16 @@ class TagConditionedEmbedding(object):
                     """
                     N = self.batch_size 
                     if self.spherical:
-                        trace_fac = self.dim * sig_j / sig_i
-                        det_fac = self.dim * tf.log(sig_j / sig_i)
+                        trace_fac = self.dim * clip_by_min(sig_j / sig_i)
+                        det_fac = self.dim * tf.log(clip_by_min(sig_j / sig_i))
                     else:
-                        trace_fac = tf.reshape(tf.reduce_sum(sig_j / sig_i, axis=1), [N, 1]) 
-                        det_fac = tf.reshape(tf.reduce_sum(tf.log(sig_j) - tf.log(sig_i), axis=1), [N, 1])
+                        trace_fac = tf.reshape(tf.reduce_sum(clip_by_min(sig_j / sig_i), axis=1), [N, 1]) 
+                        det_fac = tf.reshape(tf.reduce_sum(tf.log(clip_by_min(sig_j)) - tf.log(clip_by_min(sig_i)), axis=1), [N, 1])
 
                     return -0.5 * (
                             trace_fac
-                            + tf.reshape(tf.reduce_sum((mu_i-mu_j)**2 / sig_i, axis=1), [N, 1]) 
-                            - self.dim - det_fac
+                            + tf.reshape(tf.reduce_sum(clip_by_min((mu_i-mu_j)**2 / sig_i), axis=1), [N, 1]) 
+                            - self.tag_embed_size - det_fac
                             )
 
                 with tf.name_scope("LossCal"):
@@ -183,13 +193,13 @@ class TagConditionedEmbedding(object):
                 with tf.name_scope("Input"):
                     self.entity_placeholders = {
                         "u_id": tf.placeholder(name="u_id", dtype=INT, shape=[None]), # center
-                        "u_t": tf.placeholder(name="u_tag", dtype=INT, shape=[None, self.tag_num]),
+                        "u_t": tf.placeholder(name="u_tag", dtype=FLOAT, shape=[None, self.tag_num]),
                         "u_noise": tf.placeholder(name="u_noise", dtype=FLOAT, shape=[None, self.tag_num, self.tag_embed_size]),
                         "p_id": tf.placeholder(name="pos_id", dtype=INT, shape=[None]), # positive
-                        "p_t": tf.placeholder(name="pos_tag", dtype=INT, shape=[None, self.tag_num]),
+                        "p_t": tf.placeholder(name="pos_tag", dtype=FLOAT, shape=[None, self.tag_num]),
                         "p_noise": tf.placeholder(name="pos_noise", dtype=FLOAT, shape=[None, self.tag_num, self.tag_embed_size]),
                         "n_id": tf.placeholder(name="neg_id", dtype=INT, shape=[None]), # negative
-                        "n_t": tf.placeholder(name="neg_tag", dtype=INT, shape=[None, self.tag_num]),
+                        "n_t": tf.placeholder(name="neg_tag", dtype=FLOAT, shape=[None, self.tag_num]),
                         "n_noise": tf.placeholder(name="neg_noise", dtype=FLOAT, shape=[None, self.tag_num, self.tag_embed_size]),
                         "u_neighbors": tf.placeholder(name = "u_neighbors", dtype = INT, shape = [None, self.agg_neighbor_num]),
                         "p_neighbors": tf.placeholder(name = "p_neighbors", dtype = INT, shape = [None, self.agg_neighbor_num]),
@@ -197,22 +207,22 @@ class TagConditionedEmbedding(object):
                     }
                 
                 with tf.name_scope("Aggregator"):
-                    self.W_agg1 = ct.glorot_init([self.feature_num, self.layer1_weight_dim], FLOAT, name="W_agg1")
+                    self.W_agg1 = ct.glorot_init([self.feature_num, self.en_embed_size], FLOAT, name="W_agg1")
                     self.feature_mat = tf.constant(self.features, dtype = FLOAT, name = "feature_mat")
-                    
                     def AGG(en_ids, neighbors):
                         # batch_size * feature_num
                         u_emd = tf.nn.embedding_lookup(self.feature_mat, en_ids)
                         # batch_size * agg_neighbor_num * feature_num
                         neighbors_emd = tf.nn.embedding_lookup(self.feature_mat, neighbors)
                         neighbors_emd_reshape = tf.reshape(neighbors_emd, [-1, self.feature_num])
-                        neigbors_agg_3d = tf.matmul(neighbors_emd_reshape, self.W_agg1)
-                        h1_pre = tf.reduce_sum(neigbors_agg_3d, axis=1)
+                        neighbors_agg = tf.matmul(neighbors_emd_reshape, self.W_agg1)
+                        neighbors_agg_3d = tf.reshape(neighbors_agg, [-1, self.agg_neighbor_num, self.en_embed_size])
+                        h1_pre = tf.reduce_sum(neighbors_agg_3d, axis=1)
                         h1 = tf.nn.leaky_relu(h1_pre, alpha=0.01)
                         return h1
 
 
-                def INFER(_en_ids, _tag_mask, _tag_noise):
+                def INFER(_en_ids, _tag_mask, _tag_noise, _neighbors):
                     """ en_ids: (batch_size x k)  (# of negative sampling)
                         tag_mask: (batch_size x k) x tag_num
                         tag_noise: (batch_size x k) x tag_num x tag_embed_size
@@ -222,41 +232,61 @@ class TagConditionedEmbedding(object):
                     en_ids = tf.reshape(_en_ids, [-1, 1])
                     tag_mask = tf.reshape(_tag_mask, [-1, self.tag_num])
                     tag_noise = tf.reshape(_tag_noise, [-1, self.tag_num, self.tag_embed_size])
+                    neighbors = tf.reshape(_neighbors, [-1, self.agg_neighbor_num])
                     with tf.name_scope("Aggregator"):
-                        en_X = AGG(en_ids) # en_x : (batch_size x k) x en_embed_size
+                        en_X = AGG(en_ids, neighbors) # en_x : (batch_size x k) x en_embed_size
+                        en_X = tf.reshape(en_X, [-1, self.en_embed_size])
 
                     with tf.name_scope("DynamicTagDist"):
                         self.W_alpha = ct.glorot_init([self.en_embed_size, self.tag_num], FLOAT, name="W_alpha") 
                         tmp = tag_mask * tf.exp(tf.matmul(en_X, self.W_alpha))  # (batch_sizexk) x tag_num
-                        self.alpha = tf.expand_dims(tmp / tf.reduce_sum(tmp, axis=1, keep_dims=True), -1) # (batch_sizexk) x tag_num x 1
+                        self.alpha = tf.expand_dims(clip_by_min(tmp / tf.reduce_sum(tmp, axis=1, keepdims=True)), -1) # (batch_sizexk) x tag_num x 1
 
-                        sig_std = tf.sqrt(tf.exp(self.logsig))
+                        sig_std = tf.sqrt(clip_by_min(tf.exp(self.logsig)))
 
                         dist_sample = self.mu + sig_std * tag_noise # (batch_sizexk) x tag_num x tag_embed_size
 
                         tag_X = tf.reduce_sum(self.alpha * dist_sample, axis=1) # (batch_sizexk) x tag_embed_size
 
                     with tf.name_scope("GenerativeNet"):
+                        with tf.name_scope("Variable"):
+                            self.W_gen = ct.glorot_init([self.en_embed_size + self.tag_embed_size, self.output_embed_size], FLOAT, name="W_gen") 
                         X = tf.concat([en_X, tag_X], 1)
-                        Y = tf.nn.leaky_relu(X, alpha=0.01, name='EmbeddingLayer')
+                        # Y = tf.nn.leaky_relu(tf.matmul(X, self.W_gen), alpha=0.01, name='EmbeddingLayer')
+                        Y = tf.nn.relu(tf.matmul(X, self.W_gen), name='EmbeddingLayer')
+                        # Y = tf.nn.sigmoid(tf.matmul(X, self.W_gen), name='EmbeddingLayer')
 
                     return Y
 
-                self.u_y = INFER(self.placeholders["u_id"], self.placeholders["u_t"], self.placeholders["u_noise"]) # batch_size x en_embed_size
-                self.p_y = INFER(self.placeholders["p_id"], self.placeholders["p_t"], self.placeholders["p_noise"]) # batch_size x en_embed_size
-                _n_y = INFER(self.placeholders["n_id"], self.placeholders["n_t"], self.placeholders["n_noise"]) # (batch_size x k) x en_embed_size 
-                self.n_y = tf.reshape(_n_y, [self.batch_size, self.nec_k, self.en_embed_size]) # batch_size x k x en_embed_size
+                self.u_y = INFER(self.entity_placeholders["u_id"], self.entity_placeholders["u_t"], self.entity_placeholders["u_noise"], self.entity_placeholders["u_neighbors"]) # batch_size x output_embed_size
+                self.p_y = INFER(self.entity_placeholders["p_id"], self.entity_placeholders["p_t"], self.entity_placeholders["p_noise"], self.entity_placeholders["p_neighbors"]) # batch_size x output_embed_size
+                self._n_y = INFER(self.entity_placeholders["n_id"], self.entity_placeholders["n_t"], self.entity_placeholders["n_noise"], self.entity_placeholders["n_neighbors"])  # (batch_size x k) x output_embed_size
+                self.n_y = tf.reshape(self._n_y, [-1, self.nce_k, self.output_embed_size]) # batch_size x k x output_embed_size
+                #self.n_y = tf.where(tf.is_nan(self.n_y_with_nan), tf.zeros_like(self.n_y_with_nan)+1e-6, self.n_y_with_nan) 
 
 
                 with tf.name_scope("NCELoss"):
-                    u_y_3d = tf.reshape(self.u_y, [-1, 1, self.en_embed_size])
+                    u_y_3d = tf.reshape(self.u_y, [-1, 1, self.output_embed_size])
 
                     # dim: batch_size x k
                     neg_dot = tf.squeeze(tf.matmul(u_y_3d, self.n_y, transpose_b=True))
-                    self.nce_loss = tf.reduce_mean(-tf.log(tf.sigmoid(tf.reduce_sum(self.u_y * self.p_y, axis=1)))-tf.log(tf.sigmoid(-neg_dot)))
+                    self.neg_dot = neg_dot
+                    self.pos = -tf.log(clip_by_min(tf.sigmoid(tf.reduce_sum(self.u_y * self.p_y, axis=1))))
+                    self.neg = tf.reduce_mean(tf.log(clip_by_min(tf.sigmoid(-neg_dot))))
+                    # self.nce_loss = tf.reduce_mean(self.pos-self.neg)
+                    self.nce_loss = tf.reduce_mean(self.pos)
 
-            self.loss = self.nec_loss + self.lambda * self.tag_loss
+            #self.loss = self.nce_loss + self._lambda * self.tag_loss
+            self.loss = self.nce_loss
             self.train_step = getattr(tf.train, self.optimizer)(self.lr).minimize(self.loss)
+            self.grad_Wgen = tf.gradients(self.loss, self.W_gen)
+            #self.grad_n_y = tf.gradients(self.loss, self.n_y)
+            self.grad_u_y = tf.gradients(self.loss, self.u_y)
+            self.grad_p_y = tf.gradients(self.loss, self.p_y)
+
+            # Add ops to save and restore all the variables
+            self.tag_saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="GaussEmbedding/Variable"))
+            self.model_saver = tf.train.Saver()
 
 
     def train(self, get_batch):
@@ -271,8 +301,9 @@ class TagConditionedEmbedding(object):
             if len(self.tag_pre_train) != 0:
                 print ("[+] reload pre train parameters of tag distribution from %s" % (self.tag_pre_train))
                 self.logger.info("[+] save pre train parameters of tag distribution from %s\n" % (self.tag_pre_train))
-                tag_saver.restore(sess, self.tag_pre_train)
-
+                print (sess.run(self.mu)[0, :])
+                self.tag_saver.restore(sess, self.tag_pre_train)
+                print (sess.run(self.mu)[0, :])
 
             for i, batch in enumerate(get_batch()):
                 tag_input_dict = {
@@ -291,7 +322,7 @@ class TagConditionedEmbedding(object):
                     self.entity_placeholders["p_noise"]: batch["en_v_noise"],
                     self.entity_placeholders["n_noise"]: batch["en_n_noise"],
                     self.entity_placeholders["u_neighbors"]: batch["en_u_neighbors"],
-                    self.entity_placeholders["v_neighbors"]: batch["en_v_neighbors"],
+                    self.entity_placeholders["p_neighbors"]: batch["en_v_neighbors"],
                     self.entity_placeholders["n_neighbors"]: batch["en_n_neighbors"]
                 }
 
@@ -300,8 +331,29 @@ class TagConditionedEmbedding(object):
                     input_dict[k] = v
                 for k, v in en_input_dict.items():
                     input_dict[k] = v
+
+                print ("Loss, gradient before\n")
+                print ("show u_y")
+                print (sess.run(self.u_y, feed_dict=input_dict).shape)
+                print (sess.run(self.u_y, feed_dict=input_dict))
+
+                print ("show p_y")
+                print (sess.run(self.p_y, feed_dict=input_dict).shape)
+                print (sess.run(self.p_y, feed_dict=input_dict))
+                # print (sess.run(self.neg_dot, feed_dict=input_dict))
+                # print (sess.run(self.neg, feed_dict=input_dict))
+                # print (sess.run(self.loss, feed_dict=input_dict))
+                print ("Grad\n")
+                print (sess.run(self.grad_u_y, feed_dict=input_dict))
+                print (sess.run(self.grad_p_y, feed_dict=input_dict))
                 self.train_step.run(input_dict)
                 loss += self.loss.eval(input_dict)
+                print ("After update grad:\n")
+                print (sess.run(self.loss, feed_dict=input_dict))
+
+                # print (sess.run(self.nce_loss, feed_dict=input_dict))
+                # print (sess.run(self.tag_loss, feed_dict=input_dict))
+                pdb.set_trace()
 
                 # clip mu
                 if self.normclip:
@@ -317,7 +369,7 @@ class TagConditionedEmbedding(object):
                     loss = 0.0
 
                     # save model
-                    model_saver.save(sess, self.model_save_path, global_step=i+1)
+                    self.model_saver.save(sess, self.model_save_path, global_step=i+1)
 
             return self.model_save_path
 

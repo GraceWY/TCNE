@@ -5,6 +5,7 @@ import random
 import math
 import numpy as np
 
+sys.path.insert(0, "../")
 from utils import common_tools as ct
 from utils.data_handler import DataHandler as dh
 
@@ -61,8 +62,6 @@ class NodeEmbedding(object):
         with self.tensor_graph.as_default():
             tf.set_random_seed(random.randint(0, 1e9))
 
-            # save model
-            saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="GaussEmbedding/Variable"))
 
             with tf.name_scope("GaussEmbedding"):
                 with tf.name_scope("Input"):
@@ -162,6 +161,11 @@ class NodeEmbedding(object):
                     self.clip_op_norm = clip_ops_graph_norm()
                     self.clip_op_var = clip_ops_graph_var()
 
+            # save model
+            self.saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="GaussEmbedding/Variable"))
+            print (tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="GaussEmbedding/Variable"))
+            print (len(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="GaussEmbedding/Variable")))
+
 
     def train(self, get_batch):
         print ("[+] Start gaussian embedding ...")
@@ -190,7 +194,7 @@ class NodeEmbedding(object):
                     loss = 0.0
 
                     # save model
-                    saver.save(sess, self.model_save_path, global_step=i+1)
+                    self.saver.save(sess, self.model_save_path, global_step=i+1)
 
             return self.model_save_path, np.array(sess.run(self.mu)), np.array(sess.run(self.logsig))
 
@@ -201,21 +205,30 @@ class NodeEmbedding(object):
             #print (sess.run(self.loss))
         writer.close()
 
+    
+    def load_model(self, model_path):
+        with tf.Session(graph=self.tensor_graph) as sess:
+            sess.run(tf.global_variables_initializer())
+            print (sess.run(self.mu))
+            self.saver.restore(sess, model_path)
+            print (sess.run(self.mu))
+
 
 if __name__ == "__main__":
     params = {}
     params["learning_rate"] = 0.01
     params["optimizer"] = "AdamOptimizer"
-    params["num_nodes"] = 100
-    params["tag_embed_size"] = 32
+    params["num_nodes"] = 34 
+    params["tag_embed_size"] = 2
     params["Closs"] = 1.0
     params["spherical"] = False 
     params["fixvar"] = False
-    params["wout"] = False
+    params["wout"] = True 
     params["normclip"] = False
     params["show_num"] = 1000
     params["logger"] = "logger"
     params["batch_size"] = 100
+    params["res_home"] = "./"
     NE = NodeEmbedding(params)
     NE.build_graph()
-    NE.show_graph()
+    NE.load_model("/Users/wangyun/repos/TCNE/res/lc_pretrain/2019-01-30-15:15:08.326264/ckpt/GaussEmbedding_dim(2)_numnodes(34)_wout(True)_spherical(False)_normClip(False)_varclip(False)-500")

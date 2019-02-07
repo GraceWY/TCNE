@@ -1,0 +1,61 @@
+{
+    "static_info" : {
+        "random_seed": 157,
+        "np_seed": 213,
+        "tag_embed_size": 2,
+        "en_embed_size": 32,
+        "output_embed_size": 32,
+        "network_folder": {
+            "name": "lc",
+            "entity": "entity.dat",
+            "tag": "tag.dat",
+            "edge": "edge.dat",
+            "mix_edge": "mix_edge.dat",
+            "entity_features": "entity_feature.dat",
+            "label": "label.dat"
+        }
+    },    
+   "run_modules": [
+        {
+            "func": "optimize",
+            "params": {
+                "func": "joint_optimize",
+                "walk_file": "/Users/wangyun/repos/TCNE/data/lc/hybrid_walk_nums_path(100)_max_path_len(5).dat",
+                "batch_strategy": "tag_entity_sampling",
+                "batch_size": 8,
+                "iterations": 500,
+                "show_num": 100,
+                "get_features": {
+                    "func": "generator",
+                    "dim": 10
+                },
+                "embedding_model": {
+                    "func": "tag_conditioned_embedding",
+                    "lambda": 1.0,
+                    "learning_rate": 0.01,
+                    "optimizer": "GradientDescentOptimizer",
+                    "aggregator": {
+                        "agg_neighbor_num": 5
+                    },
+                    "generative_net": {
+                        "nce_k": 4    
+                    },
+                    "tag_embedding": {
+                        "tag_pre_train": "/Users/wangyun/repos/TCNE/res/lc_pretrain/2019-01-30-15:15:08.326264/ckpt/GaussEmbedding_dim(2)_numnodes(34)_wout(True)_spherical(False)_normClip(False)_varclip(False)-500",
+                        "tag_trainable": true,
+                        "spherical": false,
+                        "Closs": 1.0,
+                        "wout": true,
+                        "normclip": false,
+                        "varclip": false,
+                        "lower_sig": 0.02,
+                        "upper_sig": 5.0, 
+                        "norm_cap": 3.0,
+                        "mu_scale": 1,
+                        "var_scale": 0.05   
+                    }
+                }
+            }
+        }
+   ] 
+}

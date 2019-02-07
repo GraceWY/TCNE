@@ -55,6 +55,7 @@ class DataHandler(object):
         reverse_mp = dict(zip(mp.values(), mp.keys()))
         return reverse_mp
 
+
     @staticmethod
     def load_json(file_path):
         """
@@ -99,7 +100,6 @@ class DataHandler(object):
 
             Return entity networkx G with tag_id_binary_vector as G.nodes[id]["tags"]
         """
-        pdb.set_trace()
         G = DataHandler.load_edge_as_graph(entity_edge_path, entity_name_path)
 
         # load tag 01 vector for each entity
@@ -156,9 +156,10 @@ class DataHandler(object):
                 row2name[row] = items[0]
                 row += 1
                 mat.append([float(i) for i in items[1].split()])
-                
+
         return np.array(mat, dtype=FLOAT), row2name 
-    
+
+
     @staticmethod
     def load_embedding(file_path,file_type):
         '''
@@ -180,13 +181,15 @@ class DataHandler(object):
 
         return embedding
 
+
     @staticmethod
     def load_ground_truth(file_name):
         '''load label for task node classification'''
         with open(file_name,'r') as f:
             ground_truth=f.readlines()
         return ground_truth
-        
+
+
 if __name__ == "__main__":
     folder = "/Users/wangyun/repos/TCNE/data/lc" 
     entity_edge_path = os.path.join(folder, "edge.dat")

@@ -14,8 +14,6 @@ def params_handler(params, info,  **kwargs):
     return {}
 
 
-def get_feature(params, info, **kwargs):
-    res = params_handler(params)
-    return np.ramdom.normal(size = [params["dim"], info["en_num"]])
-
-
+def get_features(params, info, **kwargs):
+    res = params_handler(params, info)
+    return np.random.normal(size = [info["en_num"], params["dim"]])

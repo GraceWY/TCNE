@@ -9,21 +9,23 @@ from batch_strategy.alias_table_sampling import AliasTable as at
 import pdb
 
 INT = np.int32
+FLOAT = np.float32
 
 class BatchStrategy(object):
     def __init__(self, G, params=None):
         """ G is a networkx with edge weight
         """
+        self.G = G
         self.iterations = params["iterations"]
         self.batch_size = params["batch_size"]
-        self.nce_k = params["nce_k"]
-        self.tag_num = params["tag_num"]
-        self.tag_embed_size = params["tag_embed_size"]
+        self.nce_k = params["embedding_model"]["generative_net"]["nce_k"]
+        self.tag_num = params["embedding_model"]["tag_num"]
+        self.tag_embed_size = params["embedding_model"]["tag_embed_size"]
+        self.agg_neighbor_num = params["embedding_model"]["aggregator"]["agg_neighbor_num"]
         self.edges = G.edges()
         self.nodes = G.nodes()
         edge_probs = []
         node_probs = []
-        
 
         # for sampling u and v_pos
         for e in self.edges:
@@ -48,7 +50,7 @@ class BatchStrategy(object):
 
         for n in self.nodes:
             node_probs.append(degree[n])
-        self.node_sampler = at(nodes_probs)
+        self.node_sampler = at(node_probs)
 
         # for sampling neighbors
         self.conditional_node_sampler = {}
@@ -61,13 +63,13 @@ class BatchStrategy(object):
                 self.conditional_node_lst[n].append(v)
             self.conditional_node_sampler[n] = at(tmp)
 
-    def sampling_unit(self, u):
+    def sample_unit(self, u):
         """
         """
-        mask = [self.G.node[u]["tags"][i] for i in xrange(self.tag_num)]
+        mask = [self.G.node[u]["tags"][i] for i in range(self.tag_num)]
         noise = np.random.normal(size = [self.tag_num, self.tag_embed_size])
         neighbors = []
-        for i in xrange(self.agg_neighbor_num):
+        for i in range(self.agg_neighbor_num):
             idx = self.conditional_node_sampler[u].sample()
             neighbors.append(self.conditional_node_lst[u][idx])
         return mask, noise, neighbors
@@ -103,7 +105,7 @@ class BatchStrategy(object):
                 batch_v_noise.append(noise)
                 batch_v_neighbors.append(neighbors)
 
-                for _ in xrange(self.nce_k)
+                for _ in range(self.nce_k):
                     idx = self.node_sampler.sample()
                     n = self.nodes[idx]
                     batch_n.append(n)
@@ -114,14 +116,14 @@ class BatchStrategy(object):
 
                 
             yield {"u" : np.array(batch_u, dtype=INT),
-                    "u_mask" : np.array(batch_u_mask, dtype=INT),
+                    "u_mask" : np.array(batch_u_mask, dtype=FLOAT),
                     "u_noise" : np.array(batch_u_noise, dtype=FLOAT),
                     "u_neighbors" : np.array(batch_u_neighbors, dtype = INT),
                     "v" : np.array(batch_v, dtype=INT),
-                    "v_mask" : np.array(batch_v_mask, dtype=INT),
+                    "v_mask" : np.array(batch_v_mask, dtype=FLOAT),
                     "v_noise" : np.array(batch_v_noise, dtype=FLOAT),
                     "v_neighbors" : np.array(batch_v_neighbors, dtype = INT),
                     "n" : np.array(batch_n, dtype=INT),
-                    "n_mask" : np.array(batch_n_mask, dtype=INT),
+                    "n_mask" : np.array(batch_n_mask, dtype=FLOAT),
                     "n_noise" : np.array(batch_n_noise, dtype=FLOAT),
                     "n_neighbors" : np.array(batch_n_neighbors, dtype = INT)}
