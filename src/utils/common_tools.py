@@ -75,11 +75,27 @@ def reduce_dist_dim(mus, std_sigs, dim):
     de_std_sigs = pca.transform(std_sigs)
     return de_mus, de_std_sigs
 
+def reduce_embedding_dim(X,dim=2):
+    pca = PCA(n_components=dim)
+    low_dim_embs = pca.fit_transform(X)
+    return low_dim_embs
+
 
 def glorot_init(shape, _dtype, name=None):
     init_range = np.sqrt(6.0/(shape[0]+shape[1]))
     initial = tf.random_uniform(shape, minval=-init_range, maxval=init_range, dtype=_dtype)
     return tf.Variable(initial, name=name)
+
+def label2color(label):
+    new_label=list(set(label))
+    class_num=len(new_label)
+    random_Value = np.random.rand(class_num)
+    node_num=len(label)
+    color=np.zeros(node_num)
+    for i in range(node_num):
+        pos=new_label.index(label[i])
+        color[i]=random_Value[pos]
+    return color
 
 if __name__ == "__main__":
     X = np.array([[1, 1, 1], [2, 2, 2], [3, 3, 3], [4, 4, 4]])
