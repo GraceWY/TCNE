@@ -12,7 +12,7 @@ import pdb
 
 INT=tf.int32
 FLOAT=tf.float32
-
+DEBUG = True
 
 class TagConditionedEmbedding(object):
     """ Tag conditioned Network Embedding
@@ -222,6 +222,7 @@ class TagConditionedEmbedding(object):
                         return h1
 
 
+
                 def INFER(_en_ids, _tag_mask, _tag_noise, _neighbors):
                     """ en_ids: (batch_size x k)  (# of negative sampling)
                         tag_mask: (batch_size x k) x tag_num
@@ -238,7 +239,9 @@ class TagConditionedEmbedding(object):
                         en_X = tf.reshape(en_X, [-1, self.en_embed_size])
 
                     with tf.name_scope("DynamicTagDist"):
-                        self.W_alpha = ct.glorot_init([self.en_embed_size, self.tag_num], FLOAT, name="W_alpha") 
+                        with tf.variable_scope("DynTagDistVar", reuse = tf.AUTO_REUSE):
+                            self.W_alpha = tf.get_variable("W_alpha", [self.en_embed_size, self.tag_num], dtype = FLOAT,
+                                    initializer = tf.contrib.layers.xavier_initializer())
                         tmp = tag_mask * tf.exp(tf.matmul(en_X, self.W_alpha))  # (batch_sizexk) x tag_num
                         self.alpha = tf.expand_dims(clip_by_min(tmp / tf.reduce_sum(tmp, axis=1, keepdims=True)), -1) # (batch_sizexk) x tag_num x 1
 
@@ -249,11 +252,19 @@ class TagConditionedEmbedding(object):
                         tag_X = tf.reduce_sum(self.alpha * dist_sample, axis=1) # (batch_sizexk) x tag_embed_size
 
                     with tf.name_scope("GenerativeNet"):
-                        with tf.name_scope("Variable"):
-                            self.W_gen = ct.glorot_init([self.en_embed_size + self.tag_embed_size, self.output_embed_size], FLOAT, name="W_gen") 
-                        X = tf.concat([en_X, tag_X], 1)
+                        with tf.variable_scope("GenNetVar", reuse=tf.AUTO_REUSE):
+                            if DEBUG:
+                                self.W_gen = tf.get_variable("W_gen", [self.tag_embed_size, self.output_embed_size], dtype = FLOAT, initializer = 
+                                        tf.contrib.layers.xavier_initializer()) 
+                            else:
+                                self.W_gen = tf.get_variable("W_gen", [self.tag_embed_size + self.tag_embed_size, self.output_embed_size], dtype = FLOAT, initializer = 
+                                        tf.contrib.layers.xavier_initializer) 
+                        if DEBUG:
+                            X = tag_X
+                        else:
+                            X = tf.concat([en_X, tag_X], 1)
                         # Y = tf.nn.leaky_relu(tf.matmul(X, self.W_gen), alpha=0.01, name='EmbeddingLayer')
-                        Y = tf.nn.relu(tf.matmul(X, self.W_gen), name='EmbeddingLayer')
+                        Y = tf.nn.tanh(tf.matmul(X, self.W_gen), name='EmbeddingLayer')
                         # Y = tf.nn.sigmoid(tf.matmul(X, self.W_gen), name='EmbeddingLayer')
 
                     return Y
@@ -273,8 +284,8 @@ class TagConditionedEmbedding(object):
                     self.neg_dot = neg_dot
                     self.pos = -tf.log(clip_by_min(tf.sigmoid(tf.reduce_sum(self.u_y * self.p_y, axis=1))))
                     self.neg = tf.reduce_mean(tf.log(clip_by_min(tf.sigmoid(-neg_dot))))
-                    # self.nce_loss = tf.reduce_mean(self.pos-self.neg)
-                    self.nce_loss = tf.reduce_mean(self.pos)
+                    self.nce_loss = tf.reduce_mean(self.pos-self.neg)
+                    #self.nce_loss = tf.reduce_mean(self.pos)
 
             #self.loss = self.nce_loss + self._lambda * self.tag_loss
             self.loss = self.nce_loss
@@ -326,34 +337,41 @@ class TagConditionedEmbedding(object):
                     self.entity_placeholders["n_neighbors"]: batch["en_n_neighbors"]
                 }
 
+                #print ("batch: ", batch)
+
                 input_dict = {}
                 for k, v in tag_input_dict.items():
                     input_dict[k] = v
                 for k, v in en_input_dict.items():
                     input_dict[k] = v
+                
+                if DEBUG:
+                    print ("Loss, gradient before\n")
+                    print ("show u_y")
+                    print (sess.run(self.u_y, feed_dict=input_dict).shape)
+                    print (sess.run(self.u_y, feed_dict=input_dict))
 
-                print ("Loss, gradient before\n")
-                print ("show u_y")
-                print (sess.run(self.u_y, feed_dict=input_dict).shape)
-                print (sess.run(self.u_y, feed_dict=input_dict))
-
-                print ("show p_y")
-                print (sess.run(self.p_y, feed_dict=input_dict).shape)
-                print (sess.run(self.p_y, feed_dict=input_dict))
-                # print (sess.run(self.neg_dot, feed_dict=input_dict))
-                # print (sess.run(self.neg, feed_dict=input_dict))
-                # print (sess.run(self.loss, feed_dict=input_dict))
-                print ("Grad\n")
-                print (sess.run(self.grad_u_y, feed_dict=input_dict))
-                print (sess.run(self.grad_p_y, feed_dict=input_dict))
+                    print ("show p_y")
+                    print (sess.run(self.p_y, feed_dict=input_dict).shape)
+                    print (sess.run(self.p_y, feed_dict=input_dict))
+                    # print (sess.run(self.neg_dot, feed_dict=input_dict))
+                    # print (sess.run(self.neg, feed_dict=input_dict))
+                    # print (sess.run(self.loss, feed_dict=input_dict))
+                    print ("Grad\n")
+                    print (("W_gen Grad: ", sess.run(self.grad_Wgen, feed_dict=input_dict)))
+                    print (sess.run(self.grad_u_y, feed_dict=input_dict))
+                    print (sess.run(self.grad_p_y, feed_dict=input_dict))
+                
                 self.train_step.run(input_dict)
                 loss += self.loss.eval(input_dict)
-                print ("After update grad:\n")
-                print (sess.run(self.loss, feed_dict=input_dict))
+                if DEBUG:
+                    print ("After update grad:\n")
+                    print (sess.run(self.loss, feed_dict=input_dict))
 
                 # print (sess.run(self.nce_loss, feed_dict=input_dict))
                 # print (sess.run(self.tag_loss, feed_dict=input_dict))
-                pdb.set_trace()
+                if DEBUG:
+                    pdb.set_trace()
 
                 # clip mu
                 if self.normclip:

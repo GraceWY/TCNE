@@ -17,7 +17,7 @@ def params_handler(params, info, pre_res, **kwargs):
     
     if ("optimize" in pre_res) and ("model_save_path" in pre_res["optimize"]):
         params["embedding_model"]["tag_embedding"]["tag_pre_train"] = pre_res["optimize"]["model_save_path"]
-    else:
+    elif "tag_pre_train" in params["embedding_model"]["tag_embedding"]:
         params["embedding_model"]["tag_embedding"]["tag_pre_train"] = os.path.join(
                 info["home_path"],
                 params["embedding_model"]["tag_embedding"]["tag_pre_train"])
@@ -77,4 +77,4 @@ def optimize(params, info, pre_res, **kwargs):
     res["model_path"] = model.train(bs.get_batch)
 
     # infer model
-
+    return res

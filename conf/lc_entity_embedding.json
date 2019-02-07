@@ -22,23 +22,23 @@
                 "func": "joint_optimize",
                 "walk_file": "data/leetcode/hybrid_walk_nums_path(100)_max_path_len(5).dat",
                 "batch_strategy": "tag_entity_sampling",
-                "batch_size": 8,
+                "batch_size": 1,
                 "iterations": 500,
                 "show_num": 100,
                 "get_features": {
                     "func": "generator",
-                    "dim": 10
+                    "dim": 3
                 },
                 "embedding_model": {
                     "func": "tag_conditioned_embedding",
                     "lambda": 1.0,
-                    "learning_rate": 0.01,
-                    "optimizer": "GradientDescentOptimizer",
+                    "learning_rate": 0.00001,
+                    "optimizer": "AdamOptimizer",
                     "aggregator": {
-                        "agg_neighbor_num": 5
+                        "agg_neighbor_num": 2
                     },
                     "generative_net": {
-                        "nce_k": 4    
+                        "nce_k": 1
                     },
                     "tag_embedding": {
                         "tag_pre_train": "res/lc_pretrain/2019-02-07-18:19:28.097760/ckpt/GaussEmbedding_dim(2)_numnodes(34)_wout(True)_spherical(False)_normClip(False)_varclip(False)-500",
