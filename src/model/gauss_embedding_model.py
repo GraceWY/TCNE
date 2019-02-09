@@ -12,7 +12,7 @@ from utils.data_handler import DataHandler as dh
 import pdb
 
 INT = tf.int32
-FLOAT = tf.float32
+FLOAT = np.float64
 
 # Gaussian Embedding
 class NodeEmbedding(object):
@@ -71,27 +71,27 @@ class NodeEmbedding(object):
 
                 with tf.name_scope("Variable"):
                     self.mu = tf.Variable(tf.random_uniform([self.num_nodes, self.dim], \
-                            -mu_scale, mu_scale), name="mu", dtype=FLOAT)
+                            -mu_scale, mu_scale, dtype = FLOAT), name="mu", dtype=FLOAT)
 
                     if self.wout:
                         self.mu_out = tf.Variable(tf.random_uniform([self.num_nodes, self.dim], \
-                                -mu_scale, mu_scale), name="mu_out", dtype=FLOAT)
+                                -mu_scale, mu_scale, dtype = FLOAT), name="mu_out", dtype=FLOAT)
 
                     if self.spherical:
                         self.logsig = tf.Variable(tf.random_uniform([self.num_nodes, 1], \
-                                logvar_scale, logvar_scale), name="logsigma", dtype=FLOAT, trainable=var_trainable)
+                                logvar_scale, logvar_scale, dtype = FLOAT), name="logsigma", dtype=FLOAT, trainable=var_trainable)
 
                         if self.wout:
                             self.logsig_out = tf.Variable(tf.random_uniform([self.num_nodes, 1], \
-                                    logvar_scale, logvar_scale), name="logsigma_out", dtype=FLOAT, trainable=var_trainable)
+                                    logvar_scale, logvar_scale, dtype = FLOAT), name="logsigma_out", dtype=FLOAT, trainable=var_trainable)
 
                     else:
                         self.logsig = tf.Variable(tf.random_uniform([self.num_nodes, self.dim], \
-                                logvar_scale, logvar_scale), name="logsigma", dtype=FLOAT, trainable=var_trainable)
+                                logvar_scale, logvar_scale, dtype = FLOAT), name="logsigma", dtype=FLOAT, trainable=var_trainable)
 
                         if self.wout:
                             self.logsig_out = tf.Variable(tf.random_uniform([self.num_nodes, self.dim], \
-                                    logvar_scale, logvar_scale), name="logsigma_out", dtype=FLOAT, trainable=var_trainable)
+                                    logvar_scale, logvar_scale, dtype = FLOAT), name="logsigma_out", dtype=FLOAT, trainable=var_trainable)
 
                     if not self.wout:
                         self.mu_out, self.logsig_out = self.mu, self.logsig
@@ -123,7 +123,7 @@ class NodeEmbedding(object):
                 with tf.name_scope("LossCal"):
                     self.energy_pos = energy(self.mu_embed, self.sig_embed, self.mu_embed_pos, self.sig_embed_pos) 
                     self.energy_neg = energy(self.mu_embed, self.sig_embed, self.mu_embed_neg, self.sig_embed_neg) 
-                    self.loss = tf.reduce_mean(tf.maximum(0.0, self.Closs - self.energy_pos + self.energy_neg, name='MarginLoss'))
+                    self.loss = tf.reduce_mean(tf.maximum(FLOAT(0.0), self.Closs - self.energy_pos + self.energy_neg, name='MarginLoss'))
 
                 self.train_step = getattr(tf.train, self.optimizer)(self.lr).minimize(self.loss)
 
@@ -134,7 +134,7 @@ class NodeEmbedding(object):
                         def clip_var_ref(embedding, idxs):
                             with tf.name_scope("clip_var"):
                                 to_update = tf.nn.embedding_lookup(embedding, idxs)
-                                to_update = tf.maximum(lower_logsig, tf.minimum(upper_logsig, to_update))
+                                to_update = tf.maximum(FLOAT(lower_logsig), tf.minimum(FLOAT(upper_logsig), to_update))
                                 return tf.scatter_update(embedding, idxs, to_update)
 
                         clip1 = clip_var_ref(self.logsig, self.u_id)

@@ -11,7 +11,7 @@ from utils.data_handler import DataHandler as dh
 import pdb
 
 INT=tf.int32
-FLOAT=tf.float32
+FLOAT = np.float64
 DEBUG = True
 
 class TagConditionedEmbedding(object):
@@ -99,27 +99,27 @@ class TagConditionedEmbedding(object):
 
                 with tf.name_scope("Variable"):
                     self.mu = tf.Variable(tf.random_uniform([self.tag_num, self.tag_embed_size], \
-                            -mu_scale, mu_scale), name="mu", dtype=FLOAT, trainable=self.tag_trainable)
+                            -mu_scale, mu_scale, dtype = FLOAT), name="mu", dtype=FLOAT, trainable=self.tag_trainable)
 
                     if self.wout:
                         self.mu_out = tf.Variable(tf.random_uniform([self.tag_num, self.tag_embed_size], \
-                                -mu_scale, mu_scale), name="mu_out", dtype=FLOAT, trainable=self.tag_trainable)
+                                -mu_scale, mu_scale, dtype = FLOAT), name="mu_out", dtype=FLOAT, trainable=self.tag_trainable)
 
                     if self.spherical:
                         self.logsig = tf.Variable(tf.random_uniform([self.tag_num, 1], \
-                                logvar_scale, logvar_scale), name="logsigma", dtype=FLOAT, trainable=self.tag_trainable)
+                                logvar_scale, logvar_scale, dtype = FLOAT), name="logsigma", dtype=FLOAT, trainable=self.tag_trainable)
 
                         if self.wout:
                             self.logsig_out = tf.Variable(tf.random_uniform([self.tag_num, 1], \
-                                    logvar_scale, logvar_scale), name="logsigma_out", dtype=FLOAT, trainable=self.tag_trainable)
+                                    logvar_scale, logvar_scale, dtype = FLOAT), name="logsigma_out", dtype=FLOAT, trainable=self.tag_trainable)
 
                     else:
                         self.logsig = tf.Variable(tf.random_uniform([self.tag_num, self.tag_embed_size], \
-                                logvar_scale, logvar_scale), name="logsigma", dtype=FLOAT, trainable=self.tag_trainable)
+                                logvar_scale, logvar_scale, dtype = FLOAT), name="logsigma", dtype=FLOAT, trainable=self.tag_trainable)
 
                         if self.wout:
                             self.logsig_out = tf.Variable(tf.random_uniform([self.tag_num, self.tag_embed_size], \
-                                    logvar_scale, logvar_scale), name="logsigma_out", dtype=FLOAT, trainable=self.tag_trainable)
+                                    logvar_scale, logvar_scale, dtype = FLOAT), name="logsigma_out", dtype=FLOAT, trainable=self.tag_trainable)
 
                     if not self.wout:
                         self.mu_out, self.logsig_out = self.mu, self.logsig
@@ -152,7 +152,7 @@ class TagConditionedEmbedding(object):
                 with tf.name_scope("LossCal"):
                     self.energy_pos = energy(self.mu_embed, self.sig_embed, self.mu_embed_pos, self.sig_embed_pos) 
                     self.energy_neg = energy(self.mu_embed, self.sig_embed, self.mu_embed_neg, self.sig_embed_neg) 
-                    self.tag_loss = tf.reduce_mean(tf.maximum(0.0, self.Closs - self.energy_pos + self.energy_neg, name='MarginLoss'))
+                    self.tag_loss = tf.reduce_mean(tf.maximum(FLOAT(0.0), self.Closs - self.energy_pos + self.energy_neg, name='MarginLoss'))
 
                 with tf.name_scope("ClipOp"):
                     """ Clip variance
@@ -161,7 +161,7 @@ class TagConditionedEmbedding(object):
                         def clip_var_ref(embedding, idxs):
                             with tf.name_scope("clip_var"):
                                 to_update = tf.nn.embedding_lookup(embedding, idxs)
-                                to_update = tf.maximum(lower_logsig, tf.minimum(upper_logsig, to_update))
+                                to_update = tf.maximum(FLOAT(lower_logsig), tf.minimum(FLOAT(upper_logsig), to_update))
                                 return tf.scatter_update(embedding, idxs, to_update)
 
                         clip1 = clip_var_ref(self.logsig, self.tag_placeholders["u_id"])
@@ -207,7 +207,8 @@ class TagConditionedEmbedding(object):
                     }
                 
                 with tf.name_scope("Aggregator"):
-                    self.W_agg1 = ct.glorot_init([self.feature_num, self.en_embed_size], FLOAT, name="W_agg1")
+                    self.W_agg1 = tf.get_variable("W_agg1", [self.feature_num, self.en_embed_size], dtype = FLOAT, initializer = 
+                                        tf.contrib.layers.xavier_initializer(dtype = tf.as_dtype(FLOAT))) 
                     self.feature_mat = tf.constant(self.features, dtype = FLOAT, name = "feature_mat")
                     def AGG(en_ids, neighbors):
                         # batch_size * feature_num
@@ -241,9 +242,9 @@ class TagConditionedEmbedding(object):
                     with tf.name_scope("DynamicTagDist"):
                         with tf.variable_scope("DynTagDistVar", reuse = tf.AUTO_REUSE):
                             self.W_alpha = tf.get_variable("W_alpha", [self.en_embed_size, self.tag_num], dtype = FLOAT,
-                                    initializer = tf.contrib.layers.xavier_initializer())
+                                    initializer = tf.contrib.layers.xavier_initializer(dtype = tf.as_dtype(FLOAT)))
                         tmp = tag_mask * tf.exp(tf.matmul(en_X, self.W_alpha))  # (batch_sizexk) x tag_num
-                        self.alpha = tf.expand_dims(clip_by_min(tmp / tf.reduce_sum(tmp, axis=1, keepdims=True)), -1) # (batch_sizexk) x tag_num x 1
+                        self.alpha = tf.expand_dims(tmp / tf.reduce_sum(tmp, axis=1, keepdims=True), -1) # (batch_sizexk) x tag_num x 1
 
                         sig_std = tf.sqrt(clip_by_min(tf.exp(self.logsig)))
 
@@ -255,10 +256,10 @@ class TagConditionedEmbedding(object):
                         with tf.variable_scope("GenNetVar", reuse=tf.AUTO_REUSE):
                             if DEBUG:
                                 self.W_gen = tf.get_variable("W_gen", [self.tag_embed_size, self.output_embed_size], dtype = FLOAT, initializer = 
-                                        tf.contrib.layers.xavier_initializer()) 
+                                        tf.contrib.layers.xavier_initializer(dtype = tf.as_dtype(FLOAT))) 
                             else:
                                 self.W_gen = tf.get_variable("W_gen", [self.tag_embed_size + self.tag_embed_size, self.output_embed_size], dtype = FLOAT, initializer = 
-                                        tf.contrib.layers.xavier_initializer) 
+                                        tf.contrib.layers.xavier_initializer(dtype = tf.as_dtype(FLOAT))) 
                         if DEBUG:
                             X = tag_X
                         else:
