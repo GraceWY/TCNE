@@ -20,7 +20,7 @@
             "func": "optimize",
             "params": {
                 "func": "joint_optimize",
-                "walk_file": "data/leetcode/hybrid_walk_nums_path(100)_max_path_len(5).dat",
+                "walk_file": "data/lc/hybrid_walk_nums_path(100)_max_path_len(5).dat",
                 "batch_strategy": "tag_entity_sampling",
                 "batch_size": 1,
                 "iterations": 500,
@@ -41,7 +41,7 @@
                         "nce_k": 1
                     },
                     "tag_embedding": {
-                        "tag_pre_train": "res/lc_pretrain/2019-02-07-18:19:28.097760/ckpt/GaussEmbedding_dim(2)_numnodes(34)_wout(True)_spherical(False)_normClip(False)_varclip(False)-500",
+                        "tag_pre_train": "res/lc_pretrain/2019-01-30-15:15:08.326264/ckpt/GaussEmbedding_dim(2)_numnodes(34)_wout(True)_spherical(False)_normClip(False)_varclip(False)-500",
                         "tag_trainable": true,
                         "spherical": false,
                         "Closs": 1.0,

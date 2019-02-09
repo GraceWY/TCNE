@@ -316,6 +316,13 @@ class TagConditionedEmbedding(object):
                 self.tag_saver.restore(sess, self.tag_pre_train)
                 print (sess.run(self.mu)[0, :])
 
+                if DEBUG:
+                    print ("######################## mu\n")
+                    print (sess.run(self.mu))
+                    print ("######################## logsig\n")
+                    print (sess.run(self.logsig))
+                    pdb.set_trace()
+
             for i, batch in enumerate(get_batch()):
                 tag_input_dict = {
                     self.tag_placeholders["u_id"]: batch["tag_u"],
