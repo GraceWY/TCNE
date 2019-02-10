@@ -243,8 +243,11 @@ class TagConditionedEmbedding(object):
                         with tf.variable_scope("DynTagDistVar", reuse = tf.AUTO_REUSE):
                             self.W_alpha = tf.get_variable("W_alpha", [self.en_embed_size, self.tag_num], dtype = FLOAT,
                                     initializer = tf.contrib.layers.xavier_initializer(dtype = tf.as_dtype(FLOAT)))
-                        tmp = tag_mask * tf.exp(tf.matmul(en_X, self.W_alpha))  # (batch_sizexk) x tag_num
-                        self.alpha = tf.expand_dims(tmp / tf.reduce_sum(tmp, axis=1, keepdims=True), -1) # (batch_sizexk) x tag_num x 1
+                        # add tricks to guarantee the stalibility of softmax
+                        self.alpha_before_softmax = tf.matmul(en_X, self.W_alpha)   # (batch_sizexk) x tag_num
+                        self.alpha_before_softmax_max = tf.stop_gradient(tf.reduce_max(self.alpha_before_softmax, axis = 1, keepdims = True))
+                        self.alpha_exp = tag_mask * tf.exp(self.alpha_before_softmax - self.alpha_before_softmax_max)  # (batch_sizexk) x tag_num
+                        self.alpha = tf.expand_dims(self.alpha_exp / tf.reduce_sum(self.alpha_exp, axis=1, keepdims=True), -1) # (batch_sizexk) x tag_num x 1
 
                         sig_std = tf.sqrt(clip_by_min(tf.exp(self.logsig)))
 
