@@ -265,7 +265,11 @@ class TagConditionedEmbedding(object):
                         else:
                             X = tf.concat([en_X, tag_X], 1)
                         # Y = tf.nn.leaky_relu(tf.matmul(X, self.W_gen), alpha=0.01, name='EmbeddingLayer')
-                        Y = tf.nn.tanh(tf.matmul(X, self.W_gen), name='EmbeddingLayer')
+
+                        if DEBUG:
+                            Y = X
+                        else:
+                            Y = tf.nn.tanh(tf.matmul(X, self.W_gen), name='EmbeddingLayer')
                         # Y = tf.nn.sigmoid(tf.matmul(X, self.W_gen), name='EmbeddingLayer')
 
                     return Y
@@ -292,7 +296,7 @@ class TagConditionedEmbedding(object):
             self.loss = self.nce_loss
             self.train_step = getattr(tf.train, self.optimizer)(self.lr).minimize(self.loss)
             self.grad_Wgen = tf.gradients(self.loss, self.W_gen)
-            #self.grad_n_y = tf.gradients(self.loss, self.n_y)
+            self.grad_n_y = tf.gradients(self.loss, self.n_y)
             self.grad_u_y = tf.gradients(self.loss, self.u_y)
             self.grad_p_y = tf.gradients(self.loss, self.p_y)
 
@@ -310,7 +314,7 @@ class TagConditionedEmbedding(object):
 
             """ Init the parameters of tag distribution
             """
-            if len(self.tag_pre_train) != 0 && not DEBUG:
+            if len(self.tag_pre_train) != 0 and not DEBUG:
                 print ("[+] reload pre train parameters of tag distribution from %s" % (self.tag_pre_train))
                 self.logger.info("[+] save pre train parameters of tag distribution from %s\n" % (self.tag_pre_train))
                 print (sess.run(self.mu)[0, :])
@@ -345,7 +349,8 @@ class TagConditionedEmbedding(object):
                     self.entity_placeholders["n_neighbors"]: batch["en_n_neighbors"]
                 }
 
-                #print ("batch: ", batch)
+                # print ("batch: ", batch)
+                # pdb.set_trace()
 
                 input_dict = {}
                 for k, v in tag_input_dict.items():
@@ -356,19 +361,24 @@ class TagConditionedEmbedding(object):
                 if DEBUG:
                     print ("Loss, gradient before\n")
                     print ("show u_y")
-                    print (sess.run(self.u_y, feed_dict=input_dict).shape)
                     print (sess.run(self.u_y, feed_dict=input_dict))
 
                     print ("show p_y")
-                    print (sess.run(self.p_y, feed_dict=input_dict).shape)
                     print (sess.run(self.p_y, feed_dict=input_dict))
                     # print (sess.run(self.neg_dot, feed_dict=input_dict))
                     # print (sess.run(self.neg, feed_dict=input_dict))
-                    # print (sess.run(self.loss, feed_dict=input_dict))
-                    print ("Grad\n")
-                    print (("W_gen Grad: ", sess.run(self.grad_Wgen, feed_dict=input_dict)))
+                    print ("show loss")
+                    print (sess.run(self.loss, feed_dict=input_dict))
+
+                    print ("show n_y")
+                    print (sess.run(self.n_y, feed_dict=input_dict))
+
+                    print ("Grad")
+                    # print (("W_gen Grad: ", sess.run(self.grad_Wgen, feed_dict=input_dict)))
                     print (sess.run(self.grad_u_y, feed_dict=input_dict))
                     print (sess.run(self.grad_p_y, feed_dict=input_dict))
+                    print (sess.run(self.grad_n_y, feed_dict=input_dict))
+                    
                 
                 self.train_step.run(input_dict)
                 loss += self.loss.eval(input_dict)

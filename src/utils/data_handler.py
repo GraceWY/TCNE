@@ -46,7 +46,6 @@ class DataHandler(object):
                 reversed dict {id, str} (node_id, name)
         """
         mp = dict()
-        pdb.set_trace()
         with open(file_path, "r", encoding="gb2312") as f:
             for line in f:
                 line = line.strip()
