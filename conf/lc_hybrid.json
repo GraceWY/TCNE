@@ -5,12 +5,11 @@
         "tag_embed_size": 2,
         "en_embed_size": 32,
         "network_folder": {
-            "name": "leetcode",
-            "entity": "node.txt",
-            "tag": "tag.txt",
-            "edge": "edge.txt",
-            "mix_edge": "tag-edge.txt",
-            "entity_features": "leetcode.json",
+            "name": "lc",
+            "entity": "entity.dat",
+            "tag": "tag.dat",
+            "edge": "edge.dat",
+            "mix_edge": "mix_edge.dat",
             "label": "label.dat"
         }
     },    
@@ -37,9 +36,8 @@
             "params": {
                 "func": "optimize_tag",
                 "batch_strategy": "weighted_edges_sampling",
-                "walk_file": "/Users/wangyun/repos/TCNE/data/lc/hybrid_walk_nums_path(100)_max_path_len(5).dat",
                 "batch_size": 4,
-                "iterations": 1500,
+                "iterations": 500,
                 "embedding_model": {
                     "func": "gauss_embedding_model",
                     "learning_rate": 0.01,

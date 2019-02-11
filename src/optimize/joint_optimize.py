@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import numpy as np
+import pickle
 
 from utils import common_tools as ct
 from utils.data_handler import DataHandler as dh
@@ -32,7 +33,10 @@ def params_handler(params, info, pre_res, **kwargs):
     params["embedding_model"]["show_num"] = params["show_num"]
     params["embedding_model"]["logger"] = info["logger"]
 
-    return {}
+    res = {} 
+    res["entity_embedding_path"] = os.path.join(info["res_home"], "embeds.pkl")
+
+    return res
 
 
 @ct.module_decorator
@@ -66,7 +70,6 @@ def optimize(params, info, pre_res, **kwargs):
 
     model_handler = __import__("model." + params["embedding_model"]["func"], fromlist=["model"])
     model = model_handler.TagConditionedEmbedding(params["embedding_model"], features)
-    model.build_graph()
 
     # batch generator
     print ("[+] The batch strategy is batch_strategy.%s" % (params["batch_strategy"]))
@@ -77,5 +80,11 @@ def optimize(params, info, pre_res, **kwargs):
     # train model
     res["model_path"] = model.train(bs.get_batch)
 
+    pdb.set_trace()
     # infer model
+    embeds = model.infer(bs.get_all())
+    dh.save_as_pickle(embeds, res["entity_embedding_path"])
+    print ("[+] The entity embedding result is saved at %s" % (res["entity_embedding_path"]))
+    info["logger"].info("[+] The entity embedding result is saved at %s" % (res["entity_embedding_path"]))
+
     return res

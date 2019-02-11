@@ -12,7 +12,7 @@ from sklearn.linear_model import SGDClassifier
 
 from utils import common_tools as ct
 from utils.data_handler import DataHandler as dh
-from utils.draw_graph import DrawGraph as dg
+# from utils.draw_graph import DrawGraph as dg
 from utils.lib_ml import MachineLearningLib as mll
 from utils.env import *
 
@@ -58,13 +58,17 @@ def metric(params, info, pre_res, **kwargs):
     res = params_handler(params, info)
 
     # load embeddings 
-    embedding_path=os.path.join(DATA_PATH,"experiment",params["embeddings_file"])
-    node_path=os.path.join(DATA_PATH,params["data"],"node.txt")
-    node_file=open(node_path,'r')
-    nodes=node_file.readlines()
-    node_num=len(nodes)
-    node_file.close()
-    X = dh.load_embedding(embedding_path,params["file_type"],node_num)
+    if params["file_type"] == "txt":
+        embedding_path=os.path.join(DATA_PATH, "experiment", params["embeddings_file"])
+        node_path=os.path.join(DATA_PATH, params["data"], "node.txt")
+        node_file=open(node_path, 'r')
+        nodes=node_file.readlines()
+        node_num=len(nodes)
+        node_file.close()
+        X = dh.load_embedding(embedding_path, params["file_type"], node_num)
+    else:
+        X = dh.load_embedding(os.path.join(info["home_path"], params["embeddings_file"]), params["file_type"])
+
     
     # results include: accuracy, micro f1, macro f1
     metric_res = classification(X, params)

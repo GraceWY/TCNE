@@ -284,11 +284,13 @@ class TagConditionedEmbedding(object):
                     u_y_3d = tf.reshape(self.u_y, [-1, 1, self.output_embed_size])
 
                     # dim: batch_size x k
-                    neg_dot = tf.squeeze(tf.matmul(u_y_3d, self.n_y, transpose_b=True))
+                    # neg_dot = tf.squeeze(tf.matmul(u_y_3d, self.n_y, transpose_b=True))
+                    neg_dot = tf.reduce_sum(tf.matmul(u_y_3d, self.n_y, transpose_b=True), 1)
                     self.neg_dot = neg_dot
                     self.pos = -tf.log(clip_by_min(tf.sigmoid(tf.reduce_sum(self.u_y * self.p_y, axis=1))))
-                    self.neg = tf.reduce_mean(tf.log(clip_by_min(tf.sigmoid(-neg_dot))))
+                    self.neg = tf.reduce_mean(tf.log(clip_by_min(tf.sigmoid(-neg_dot))), -1)
                     self.nce_loss = tf.reduce_mean(self.pos-self.neg)
+                    self.margin_loss = tf.reduce_mean(tf.maximum(FLOAT(0.0), self.Closs - self.pos + self.neg))
                     #self.nce_loss = tf.reduce_mean(self.pos)
 
             #self.loss = self.nce_loss + self._lambda * self.tag_loss

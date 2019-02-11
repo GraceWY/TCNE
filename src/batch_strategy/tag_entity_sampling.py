@@ -38,3 +38,6 @@ class BatchStrategy(object):
             tag_res = next(self.bs_tag_handler.get_batch())
             en_res = next(self.bs_entity_handler.get_batch())
             yield deal_res(tag_res, en_res)
+
+    def get_all(self):
+        return self.bs_entity_handler.get_all()

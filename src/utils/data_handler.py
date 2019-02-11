@@ -167,7 +167,8 @@ class DataHandler(object):
         load embedding from file name 
         '''
         if file_type == "pickle":
-            embedding = pickle.load(file_name)
+            with open(file_path, "rb") as fn:
+                embedding = pickle.load(fn)
         elif file_type == "txt":
             with open(file_path,'r') as f:
                 lines = f.readlines()
@@ -194,6 +195,11 @@ class DataHandler(object):
         ground_truth_file.close()
         return ground_truth
 
+
+    @staticmethod
+    def save_as_pickle(data, file_name):
+        with open(file_name, "wb") as fn:
+            pickle.dump(data, fn)
 
 if __name__ == "__main__":
     folder = "/Users/wangyun/repos/TCNE/data/lc" 

@@ -9,7 +9,7 @@ from batch_strategy.alias_table_sampling import AliasTable as at
 import pdb
 
 INT = np.int32
-FLOAT = np.float32
+FLOAT = np.float64
 
 class BatchStrategy(object):
     def __init__(self, G, params=None):
@@ -127,3 +127,27 @@ class BatchStrategy(object):
                     "n_mask" : np.array(batch_n_mask, dtype=FLOAT),
                     "n_noise" : np.array(batch_n_noise, dtype=FLOAT),
                     "n_neighbors" : np.array(batch_n_neighbors, dtype = INT)}
+
+
+    def get_all(self):
+        """
+        """
+        u = [i for i in range(self.G.number_of_nodes())]
+        mask = []
+        noise = []
+        for u_id in range(self.G.number_of_nodes()):
+            mask_unit = [self.G.node[u_id]["tags"][i] for i in range(self.tag_num)]
+            mask.append(mask_unit)
+        noise = np.random.normal(size = [self.G.number_of_nodes(), self.tag_num, self.tag_embed_size])
+        u_neighbors = []
+        for u_id in range(self.G.number_of_nodes()):
+            neighbors = []
+            for i in range(self.agg_neighbor_num):
+                idx = self.conditional_node_sampler[u_id].sample()
+                neighbors.append(self.conditional_node_lst[u_id][idx])
+            u_neighbors.append(neighbors)
+
+        return {"u" : np.array(u, dtype=INT),
+                "u_mask" : np.array(mask, dtype=FLOAT),
+                "u_noise" : np.array(noise, dtype=FLOAT),
+                "u_neighbors": np.array(u_neighbors, dtype=INT)}
