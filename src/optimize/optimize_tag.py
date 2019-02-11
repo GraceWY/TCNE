@@ -41,7 +41,6 @@ def optimize(params, info, pre_res, **kwargs):
     model_handler = __import__("model." + params["embedding_model"]["func"], fromlist = ["model"])
     # model = model_handler.NodeEmbedding(params["embedding_model"], features)
     model = model_handler.NodeEmbedding(params["embedding_model"])
-    model.build_graph()
 
     # get_batch generator
     print ("[+] The batch strategy is batch_strategy.%s" % (params["batch_strategy"]))
@@ -49,31 +48,15 @@ def optimize(params, info, pre_res, **kwargs):
     bs_handler = __import__("batch_strategy." + params["batch_strategy"], fromlist=["batch_strategy"])
     bs = bs_handler.BatchStrategy(G, params)
 
-    
     # train model
     res["model_save_path"], mus, logsigs = model.train(bs.get_batch)
     sigs = np.exp(logsigs)
 
-    # map the the mus and sigs with their name according to G 
-    res["mus"], res["sigs"] = map_id_to_label(G, mus, sigs) 
+    res["mus"] = os.path.join(info["res_home"], "mus.pkl")
+    res["sigs"] = os.path.join(info["res_home"], "sigs.pkl")
 
-    # save in the file
-    dh.save_dict(res["mus"], os.path.join(info["res_home"], "mus.dat"))
-    dh.save_dict(res["sigs"], os.path.join(info["res_home"], "sigs.dat"))
+    # save result
+    dh.save_as_pickle(mus, res["mus"])
+    dh.save_as_pickle(sigs, res["sigs"])
 
     return res
-
-
-def map_id_to_label(G, mus, sigs):
-    nrow = len(mus)
-    assert len(G.nodes()) == nrow, "Fatal Error: the # of G.nodes() != # of mus' row"
-    mp_mus = dict()
-    mp_sigs = dict()
-
-    for i in range(nrow):
-        assert i in G, "Fatal Error: the node id not in G"
-        mp_mus[G.node[i]["name"]] = mus[i]
-        mp_sigs[G.node[i]["name"]] = sigs[i]
-
-    return mp_mus, mp_sigs
-

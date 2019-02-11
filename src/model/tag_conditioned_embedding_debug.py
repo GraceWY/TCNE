@@ -73,7 +73,7 @@ class TagConditionedEmbedding(object):
         self.model_save_path = os.path.join(params["res_home"], fn)
 
         self.tensor_graph = tf.Graph()
-        build_graph()
+        self.build_graph()
 
 
     def build_graph(self):
