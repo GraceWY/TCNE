@@ -23,9 +23,13 @@ def params_handler(params, info):
 def metric(params, info, pre_res, **kwargs):
     res = params_handler(params, info)
 
-    mus, row2name = dh.load_dict(os.path.join(params["res_home"], "mus.dat"))
-    sigs, row2name = dh.load_dict(os.path.join(params["res_home"], "sigs.dat"))
+    mus = dh.load_as_pickle(pre_res["optimize"]["mus"])
+    sigs = dh.load_as_pickle(pre_res["optimize"]["sigs"])
+
     std_sigs = np.sqrt(sigs)
+
+    row2name = dh.load_name(os.path.join(info["network_folder"]["name"], info["network_folder"]["tag"]))
+    pdb.set_trace()
 
     assert len(mus) > 0, "The mus file has no data"
 
@@ -43,6 +47,8 @@ def metric(params, info, pre_res, **kwargs):
         mus, std_sigs = ct.reduce_dist_dim(mus, std_sigs, 2)
 
     res["ellipse_path"] = os.path.join(params["res_home"], "dist_ellipse.pdf")
+
+    pdb.set_trace()
 
     dg.draw_ellipse(mus, std_sigs, row2name, res["ellipse_path"], params["timesOfSigma"])
 

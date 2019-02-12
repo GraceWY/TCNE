@@ -1,0 +1,32 @@
+{
+    "static_info" : {
+        "random_seed": 157,
+        "np_seed": 213,
+        "tag_embed_size": 2,
+        "network_folder": {
+            "name": "leetcode",
+            "entity": "node.txt",
+            "tag": "tag.txt",
+            "edge": "edge.txt",
+            "mix_edge": "tag-edge.txt",
+            "label": "label.txt"
+        }
+    },    
+   "run_modules": [
+        {
+            "func": "metric",
+            "params": {
+                "func": "node_classification",
+                "embeddings_file":"res/lc_entity_embedding_debug/2019-02-11-00:44:03.520433/embeds.pkl",
+                "file_type":"pickle",
+                "data":"leetcode",
+                "ground_truth":"label.txt",
+                "times":10,
+                "test_size":0.3,
+                "model":{
+                    "func":"logistic"
+                }
+            }    
+        }
+   ] 
+}

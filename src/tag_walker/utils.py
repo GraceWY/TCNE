@@ -17,4 +17,4 @@ def get_simrank_output(HG,node1,node2):
     tag1, tag2 = HG.node[node1]["oid"], HG.node[node2]["oid"]
     if tag1 >= tag2:
         tag1, tag2 = tag2, tag1
-    return tag1 + "\t" + tag2
+    return str(tag1) + "\t" + str(tag2)

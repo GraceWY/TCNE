@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import sys
 import re
@@ -45,7 +46,9 @@ class DataHandler(object):
                 reversed dict {id, str} (node_id, name)
         """
         mp = dict()
+
         with open(file_path, 'r',encoding='gb2312') as f:
+
             for line in f:
                 line = line.strip()
                 if len(line) == 0:
@@ -54,6 +57,7 @@ class DataHandler(object):
                 mp[" ".join(items[:-1])] = int(items[-1])
         reverse_mp = dict(zip(mp.values(), mp.keys()))
         return reverse_mp
+
 
     @staticmethod
     def load_json(file_path):
@@ -99,7 +103,6 @@ class DataHandler(object):
 
             Return entity networkx G with tag_id_binary_vector as G.nodes[id]["tags"]
         """
-        pdb.set_trace()
         G = DataHandler.load_edge_as_graph(entity_edge_path, entity_name_path)
 
         # load tag 01 vector for each entity
@@ -156,16 +159,18 @@ class DataHandler(object):
                 row2name[row] = items[0]
                 row += 1
                 mat.append([float(i) for i in items[1].split()])
-                
+
         return np.array(mat, dtype=FLOAT), row2name 
-    
+
+
     @staticmethod
     def load_embedding(file_path,file_type,node_num=0):
         '''
         load embedding from file name 
         '''
         if file_type == "pickle":
-            embedding = pickle.load(file_name)
+            with open(file_path, "rb") as fn:
+                embedding = pickle.load(fn)
         elif file_type == "txt":
             with open(file_path,'r') as f:
                 lines = f.readlines()
@@ -183,6 +188,7 @@ class DataHandler(object):
 
         return embedding
 
+
     @staticmethod
     def load_ground_truth(file_name):
         '''load label for task node classification'''
@@ -190,7 +196,18 @@ class DataHandler(object):
         ground_truth=ground_truth_file.readlines()
         ground_truth_file.close()
         return ground_truth
-        
+
+
+    @staticmethod
+    def save_as_pickle(data, file_name):
+        with open(file_name, "wb") as fn:
+            pickle.dump(data, fn)
+
+    @staticmethod
+    def load_as_pickle(file_name):
+        with open(file_name, "rb") as fn:
+            return pickle.load(fn)
+
 if __name__ == "__main__":
     folder = "/Users/wangyun/repos/TCNE/data/lc" 
     entity_edge_path = os.path.join(folder, "edge.dat")

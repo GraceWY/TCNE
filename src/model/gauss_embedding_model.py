@@ -5,13 +5,14 @@ import random
 import math
 import numpy as np
 
+sys.path.insert(0, "../")
 from utils import common_tools as ct
 from utils.data_handler import DataHandler as dh
 
 import pdb
 
 INT = tf.int32
-FLOAT = tf.float32
+FLOAT = np.float64
 
 # Gaussian Embedding
 class NodeEmbedding(object):
@@ -47,6 +48,8 @@ class NodeEmbedding(object):
         fn = "ckpt/GaussEmbedding_dim(%d)_numnodes(%d)_wout(%r)_spherical(%r)_normClip(%r)_varclip(%r)" \
                 % (self.dim, self.num_nodes, self.wout, self.spherical, self.normclip, self.varclip)
         self.model_save_path = os.path.join(params["res_home"], fn)
+        self.tensor_graph = tf.Graph()
+        self.build_graph()
 
 
     def build_graph(self):
@@ -57,12 +60,8 @@ class NodeEmbedding(object):
         var_trainable = 1-self.fixvar
         lower_logsig = math.log(self.lower_sig)
         upper_logsig = math.log(self.upper_sig)
-        self.tensor_graph = tf.Graph()
         with self.tensor_graph.as_default():
             tf.set_random_seed(random.randint(0, 1e9))
-
-            # save model
-            #saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="GaussEmbedding/Variable"))
 
             with tf.name_scope("GaussEmbedding"):
                 with tf.name_scope("Input"):
@@ -72,27 +71,27 @@ class NodeEmbedding(object):
 
                 with tf.name_scope("Variable"):
                     self.mu = tf.Variable(tf.random_uniform([self.num_nodes, self.dim], \
-                            -mu_scale, mu_scale), name="mu", dtype=FLOAT)
+                            -mu_scale, mu_scale, dtype = FLOAT), name="mu", dtype=FLOAT)
 
                     if self.wout:
                         self.mu_out = tf.Variable(tf.random_uniform([self.num_nodes, self.dim], \
-                                -mu_scale, mu_scale), name="mu_out", dtype=FLOAT)
+                                -mu_scale, mu_scale, dtype = FLOAT), name="mu_out", dtype=FLOAT)
 
                     if self.spherical:
                         self.logsig = tf.Variable(tf.random_uniform([self.num_nodes, 1], \
-                                logvar_scale, logvar_scale), name="logsigma", dtype=FLOAT, trainable=var_trainable)
+                                logvar_scale, logvar_scale, dtype = FLOAT), name="logsigma", dtype=FLOAT, trainable=var_trainable)
 
                         if self.wout:
                             self.logsig_out = tf.Variable(tf.random_uniform([self.num_nodes, 1], \
-                                    logvar_scale, logvar_scale), name="logsigma_out", dtype=FLOAT, trainable=var_trainable)
+                                    logvar_scale, logvar_scale, dtype = FLOAT), name="logsigma_out", dtype=FLOAT, trainable=var_trainable)
 
                     else:
                         self.logsig = tf.Variable(tf.random_uniform([self.num_nodes, self.dim], \
-                                logvar_scale, logvar_scale), name="logsigma", dtype=FLOAT, trainable=var_trainable)
+                                logvar_scale, logvar_scale, dtype = FLOAT), name="logsigma", dtype=FLOAT, trainable=var_trainable)
 
                         if self.wout:
                             self.logsig_out = tf.Variable(tf.random_uniform([self.num_nodes, self.dim], \
-                                    logvar_scale, logvar_scale), name="logsigma_out", dtype=FLOAT, trainable=var_trainable)
+                                    logvar_scale, logvar_scale, dtype = FLOAT), name="logsigma_out", dtype=FLOAT, trainable=var_trainable)
 
                     if not self.wout:
                         self.mu_out, self.logsig_out = self.mu, self.logsig
@@ -124,7 +123,7 @@ class NodeEmbedding(object):
                 with tf.name_scope("LossCal"):
                     self.energy_pos = energy(self.mu_embed, self.sig_embed, self.mu_embed_pos, self.sig_embed_pos) 
                     self.energy_neg = energy(self.mu_embed, self.sig_embed, self.mu_embed_neg, self.sig_embed_neg) 
-                    self.loss = tf.reduce_mean(tf.maximum(0.0, self.Closs - self.energy_pos + self.energy_neg, name='MarginLoss'))
+                    self.loss = tf.reduce_mean(tf.maximum(FLOAT(0.0), self.Closs - self.energy_pos + self.energy_neg, name='MarginLoss'))
 
                 self.train_step = getattr(tf.train, self.optimizer)(self.lr).minimize(self.loss)
 
@@ -135,7 +134,7 @@ class NodeEmbedding(object):
                         def clip_var_ref(embedding, idxs):
                             with tf.name_scope("clip_var"):
                                 to_update = tf.nn.embedding_lookup(embedding, idxs)
-                                to_update = tf.maximum(lower_logsig, tf.minimum(upper_logsig, to_update))
+                                to_update = tf.maximum(FLOAT(lower_logsig), tf.minimum(FLOAT(upper_logsig), to_update))
                                 return tf.scatter_update(embedding, idxs, to_update)
 
                         clip1 = clip_var_ref(self.logsig, self.u_id)
@@ -162,11 +161,17 @@ class NodeEmbedding(object):
                     self.clip_op_norm = clip_ops_graph_norm()
                     self.clip_op_var = clip_ops_graph_var()
 
+            # save model
+            self.saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="GaussEmbedding/Variable"))
+            print (tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="GaussEmbedding/Variable"))
+            print (len(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="GaussEmbedding/Variable")))
+
 
     def train(self, get_batch):
         print ("[+] Start gaussian embedding ...")
         self.logger.info("[+] Start gaussian embedding ...")
         loss = 0.0
+        pdb.set_trace()
         with tf.Session(graph = self.tensor_graph) as sess:
             sess.run(tf.global_variables_initializer())
             for i, batch in enumerate(get_batch()):
@@ -190,7 +195,11 @@ class NodeEmbedding(object):
                     loss = 0.0
 
                     # save model
+<<<<<<< HEAD
                     #saver.save(sess, self.model_save_path, global_step=i+1)
+=======
+                    self.saver.save(sess, self.model_save_path, global_step=i+1)
+>>>>>>> 435f3f57baeb42a24b46ee73f8d1988c4fc91754
 
             return self.model_save_path, np.array(sess.run(self.mu)), np.array(sess.run(self.logsig))
 
@@ -201,21 +210,30 @@ class NodeEmbedding(object):
             #print (sess.run(self.loss))
         writer.close()
 
+    
+    def load_model(self, model_path):
+        with tf.Session(graph=self.tensor_graph) as sess:
+            sess.run(tf.global_variables_initializer())
+            print (sess.run(self.mu))
+            self.saver.restore(sess, model_path)
+            print (sess.run(self.mu))
+
 
 if __name__ == "__main__":
     params = {}
     params["learning_rate"] = 0.01
     params["optimizer"] = "AdamOptimizer"
-    params["num_nodes"] = 100
-    params["tag_embed_size"] = 32
+    params["num_nodes"] = 34 
+    params["tag_embed_size"] = 2
     params["Closs"] = 1.0
     params["spherical"] = False 
     params["fixvar"] = False
-    params["wout"] = False
+    params["wout"] = True 
     params["normclip"] = False
     params["show_num"] = 1000
     params["logger"] = "logger"
     params["batch_size"] = 100
+    params["res_home"] = "./"
     NE = NodeEmbedding(params)
     NE.build_graph()
-    NE.show_graph()
+    NE.load_model("/Users/wangyun/repos/TCNE/res/lc_pretrain/2019-01-30-15:15:08.326264/ckpt/GaussEmbedding_dim(2)_numnodes(34)_wout(True)_spherical(False)_normClip(False)_varclip(False)-500")

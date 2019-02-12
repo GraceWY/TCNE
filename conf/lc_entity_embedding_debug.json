@@ -1,0 +1,61 @@
+{
+    "static_info" : {
+        "random_seed": 117,
+        "np_seed": 211,
+        "tag_embed_size": 2,
+        "en_embed_size": 32,
+        "output_embed_size": 34,
+        "network_folder": {
+            "name": "leetcode",
+            "entity": "node.txt",
+            "tag": "tag.txt",
+            "edge": "edge.txt",
+            "mix_edge": "tag-edge.txt",
+            "entity_features": "leetcode.json",
+            "label": "label.dat"
+        }
+    },    
+   "run_modules": [
+        {
+            "func": "optimize",
+            "params": {
+                "func": "joint_optimize",
+                "walk_file": "data/leetcode/hybrid_walk_nums_path(100)_max_path_len(5).dat",
+                "batch_strategy": "tag_entity_sampling",
+                "batch_size": 32,
+                "iterations": 1500,
+                "show_num": 100,
+                "get_features": {
+                    "func": "generator",
+                    "dim": 3
+                },
+                "embedding_model": {
+                    "func": "tag_conditioned_embedding_debug",
+                    "lambda": 1.0,
+                    "learning_rate": 0.01,
+                    "optimizer": "AdamOptimizer",
+                    "aggregator": {
+                        "agg_neighbor_num": 2
+                    },
+                    "generative_net": {
+                        "nce_k": 4 
+                    },
+                    "tag_embedding": {
+                        "tag_pre_train": "res/lc_pretrain/2019-02-10-21:30:43.535524/ckpt/GaussEmbedding_dim(2)_numnodes(34)_wout(True)_spherical(False)_normClip(False)_varclip(False)-1500",
+                        "tag_trainable": true,
+                        "spherical": false,
+                        "Closs": 1.0,
+                        "wout": true,
+                        "normclip": false,
+                        "varclip": false,
+                        "lower_sig": 0.02,
+                        "upper_sig": 5.0, 
+                        "norm_cap": 3.0,
+                        "mu_scale": 1,
+                        "var_scale": 0.05   
+                    }
+                }
+            }
+        }
+   ] 
+}
