@@ -1,48 +1,49 @@
 {
     "static_info" : {
-        "random_seed": 157,
-        "np_seed": 213,
+        "random_seed": 117,
+        "np_seed": 211,
         "tag_embed_size": 2,
         "en_embed_size": 32,
-        "output_embed_size": 32,
+        "output_embed_size": 34,
         "network_folder": {
-            "name": "lc",
-            "entity": "entity.dat",
-            "tag": "tag.dat",
-            "edge": "edge.dat",
-            "mix_edge": "mix_edge.dat",
-            "entity_features": "entity_feature.dat",
+            "name": "leetcode",
+            "entity": "node.txt",
+            "tag": "tag.txt",
+            "edge": "edge.txt",
+            "mix_edge": "tag-edge.txt",
+            "entity_features": "leetcode.json",
             "label": "label.dat"
         }
     },    
    "run_modules": [
         {
-            "func": "optimize",
+            "func": "infer",
             "params": {
-                "func": "joint_optimize",
-                "walk_file": "data/lc/hybrid_walk_nums_path(100)_max_path_len(5).dat",
+                "func": "simple_infer",
+                "walk_file": "data/leetcode/hybrid_walk_nums_path(100)_max_path_len(5).dat",
                 "batch_strategy": "tag_entity_sampling",
-                "batch_size": 1,
-                "iterations": 500,
+                "batch_size": 32,
+                "iterations": 1500,
                 "show_num": 100,
                 "get_features": {
                     "func": "generator",
                     "dim": 3
                 },
                 "embedding_model": {
-                    "func": "tag_conditioned_embedding",
+                    "func": "tag_conditioned_embedding_debug",
+                    "model_path": "res/lc_entity_embedding_debug/2019-02-14-03:01:02.230077/ckpt/TCNE_TagNum(34)_TagEmbedSize(2)_EnNum(562)_EnEmbedSize(32)_spherical(False)",
                     "lambda": 1.0,
-                    "learning_rate": 0.00001,
+                    "learning_rate": 0.01,
                     "optimizer": "AdamOptimizer",
                     "aggregator": {
                         "agg_neighbor_num": 2
                     },
                     "generative_net": {
-                        "nce_k": 1
+                        "nce_k": 4 
                     },
                     "tag_embedding": {
                         "tag_pre_train": "res/lc_pretrain/2019-02-08-18:21:15.483725/ckpt/GaussEmbedding_dim(2)_numnodes(34)_wout(True)_spherical(False)_normClip(False)_varclip(False)-500",
-                        "tag_trainable": false,
+                        "tag_trainable": true,
                         "spherical": false,
                         "Closs": 1.0,
                         "wout": true,
@@ -56,6 +57,20 @@
                     }
                 }
             }
+        },
+        {
+            "func": "metric",
+            "params": {
+                "func": "node_classification",
+                "file_type":"pickle",
+                "data":"leetcode",
+                "ground_truth":"label.txt",
+                "times":10,
+                "test_size":0.3,
+                "model":{
+                    "func":"logistic"
+                }
+            }
         }
-   ] 
+   ]
 }

@@ -73,7 +73,7 @@ class TagConditionedEmbedding(object):
         self.model_save_path = os.path.join(params["res_home"], fn)
 
         self.tensor_graph = tf.Graph()
-        build_graph()
+        self.build_graph()
 
 
     def build_graph(self):
@@ -206,10 +206,9 @@ class TagConditionedEmbedding(object):
                         "p_neighbors": tf.placeholder(name = "p_neighbors", dtype = INT, shape = [None, self.agg_neighbor_num]),
                         "n_neighbors": tf.placeholder(name = "n_neighbors", dtype = INT, shape = [None, self.agg_neighbor_num]),
                     }
-                
                 with tf.name_scope("Aggregator"):
-                    self.W_agg1 = tf.get_variable("W_agg1", [self.feature_num, self.en_embed_size], dtype = FLOAT, initializer = 
-                                        tf.contrib.layers.xavier_initializer(dtype = tf.as_dtype(FLOAT))) 
+                    self.W_agg1 = tf.get_variable("W_agg1", [self.feature_num, self.en_embed_size], dtype = FLOAT,
+                            initializer = tf.contrib.layers.xavier_initializer(dtype = tf.as_dtype(FLOAT)))
                     self.feature_mat = tf.constant(self.features, dtype = FLOAT, name = "feature_mat")
                     def AGG(en_ids, neighbors):
                         # batch_size * feature_num
@@ -222,7 +221,6 @@ class TagConditionedEmbedding(object):
                         h1_pre = tf.reduce_sum(neighbors_agg_3d, axis=1)
                         h1 = tf.nn.leaky_relu(h1_pre, alpha=0.01)
                         return h1
-
 
 
                 def INFER(_en_ids, _tag_mask, _tag_noise, _neighbors):
@@ -315,7 +313,7 @@ class TagConditionedEmbedding(object):
             # Add ops to save and restore all the variables
             self.tag_saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="GaussEmbedding/Variable"))
             self.init_op = tf.global_variables_initializer()
-            self.sess = tf.Session(graph = self.tensor_graph)
+            # self.sess = tf.Session(graph = self.tensor_graph)
             self.model_saver = tf.train.Saver()
 
 
@@ -325,119 +323,119 @@ class TagConditionedEmbedding(object):
         self.logger.info("[+] start node embedding ...\n")
         loss = 0.0
 
-        sess = self.sess
+        with tf.Session(graph = self.tensor_graph) as sess:
+            sess.run(self.init_op)
 
-        sess.run(self.init_op)
+            """ Init the parameters of tag distribution
+            """
+            if len(self.tag_pre_train) != 0 and not DEBUG:
+                print ("[+] reload pre train parameters of tag distribution from %s" % (self.tag_pre_train))
+                self.logger.info("[+] save pre train parameters of tag distribution from %s\n" % (self.tag_pre_train))
+                print (sess.run(self.mu)[0, :])
+                self.tag_saver.restore(sess, self.tag_pre_train)
+                print (sess.run(self.mu)[0, :])
 
-        """ Init the parameters of tag distribution
-        """
-        if len(self.tag_pre_train) != 0 and not DEBUG:
-            print ("[+] reload pre train parameters of tag distribution from %s" % (self.tag_pre_train))
-            self.logger.info("[+] save pre train parameters of tag distribution from %s\n" % (self.tag_pre_train))
-            print (sess.run(self.mu)[0, :])
-            self.tag_saver.restore(sess, self.tag_pre_train)
-            print (sess.run(self.mu)[0, :])
-
-        if DEBUG:
-            print ("######################## mu\n")
-            print (sess.run(self.mu))
-            print ("######################## logsig\n")
-            print (sess.run(self.logsig))
-            pdb.set_trace()
-
-        for i, batch in enumerate(get_batch()):
-            tag_input_dict = {
-                self.tag_placeholders["u_id"]: batch["tag_u"],
-                self.tag_placeholders["p_id"]: batch["tag_v"],
-                self.tag_placeholders["n_id"]: batch["tag_n"]
-            }
-            en_input_dict = {
-                self.entity_placeholders["u_id"]: batch["en_u"],
-                self.entity_placeholders["p_id"]: batch["en_v"],
-                self.entity_placeholders["n_id"]: batch["en_n"],
-                self.entity_placeholders["u_t"]: batch["en_u_mask"],
-                self.entity_placeholders["p_t"]: batch["en_v_mask"],
-                self.entity_placeholders["n_t"]: batch["en_n_mask"],
-                self.entity_placeholders["u_noise"]: batch["en_u_noise"],
-                self.entity_placeholders["p_noise"]: batch["en_v_noise"],
-                self.entity_placeholders["n_noise"]: batch["en_n_noise"],
-                self.entity_placeholders["u_neighbors"]: batch["en_u_neighbors"],
-                self.entity_placeholders["p_neighbors"]: batch["en_v_neighbors"],
-                self.entity_placeholders["n_neighbors"]: batch["en_n_neighbors"]
-            }
-
-            # print ("batch: ", batch)
-            # pdb.set_trace()
-
-            input_dict = {}
-            for k, v in tag_input_dict.items():
-                input_dict[k] = v
-            for k, v in en_input_dict.items():
-                input_dict[k] = v
-
-            
             if DEBUG:
-                print ("Loss, gradient before")
-                print ("show u_y")
-                print (batch["en_u"])
-                print (sess.run(self.u_y, feed_dict=input_dict))
+                print ("######################## mu\n")
+                print (sess.run(self.mu))
+                print ("######################## logsig\n")
+                print (sess.run(self.logsig))
+                pdb.set_trace()
 
-                print ("show p_y")
-                print (batch["en_v"])
-                print (sess.run(self.p_y, feed_dict=input_dict))
-                # print (sess.run(self.neg_dot, feed_dict=input_dict))
-                # print (sess.run(self.neg, feed_dict=input_dict))
-                # print ("show loss")
-                # print (sess.run(self.loss, feed_dict=input_dict))
+            for i, batch in enumerate(get_batch()):
+                tag_input_dict = {
+                    self.tag_placeholders["u_id"]: batch["tag_u"],
+                    self.tag_placeholders["p_id"]: batch["tag_v"],
+                    self.tag_placeholders["n_id"]: batch["tag_n"]
+                }
+                en_input_dict = {
+                    self.entity_placeholders["u_id"]: batch["en_u"],
+                    self.entity_placeholders["p_id"]: batch["en_v"],
+                    self.entity_placeholders["n_id"]: batch["en_n"],
+                    self.entity_placeholders["u_t"]: batch["en_u_mask"],
+                    self.entity_placeholders["p_t"]: batch["en_v_mask"],
+                    self.entity_placeholders["n_t"]: batch["en_n_mask"],
+                    self.entity_placeholders["u_noise"]: batch["en_u_noise"],
+                    self.entity_placeholders["p_noise"]: batch["en_v_noise"],
+                    self.entity_placeholders["n_noise"]: batch["en_n_noise"],
+                    self.entity_placeholders["u_neighbors"]: batch["en_u_neighbors"],
+                    self.entity_placeholders["p_neighbors"]: batch["en_v_neighbors"],
+                    self.entity_placeholders["n_neighbors"]: batch["en_n_neighbors"]
+                }
 
-                print ("show n_y")
-                print (batch["en_n"])
-                print (sess.run(self.n_y, feed_dict=input_dict))
+                # print ("batch: ", batch)
+                # pdb.set_trace()
 
-                # print ("show W_alpha")
-                # print (sess.run(self.W_alpha))
+                input_dict = {}
+                for k, v in tag_input_dict.items():
+                    input_dict[k] = v
+                for k, v in en_input_dict.items():
+                    input_dict[k] = v
 
-                print ("show pos and neg")
-                print (sess.run(self.pos, feed_dict=input_dict))
-                print (sess.run(self.neg, feed_dict=input_dict))
+                
+                if DEBUG:
+                    print ("Loss, gradient before")
+                    print ("show u_y")
+                    print (batch["en_u"])
+                    print (sess.run(self.u_y, feed_dict=input_dict))
 
-                print ("Grad")
-                # print (("W_gen Grad: ", sess.run(self.grad_Wgen, feed_dict=input_dict)))
-                print (sess.run(self.grad_u_y, feed_dict=input_dict))
-                print (sess.run(self.grad_p_y, feed_dict=input_dict))
-                print (sess.run(self.grad_n_y, feed_dict=input_dict))
+                    print ("show p_y")
+                    print (batch["en_v"])
+                    print (sess.run(self.p_y, feed_dict=input_dict))
+                    # print (sess.run(self.neg_dot, feed_dict=input_dict))
+                    # print (sess.run(self.neg, feed_dict=input_dict))
+                    # print ("show loss")
+                    # print (sess.run(self.loss, feed_dict=input_dict))
+
+                    print ("show n_y")
+                    print (batch["en_n"])
+                    print (sess.run(self.n_y, feed_dict=input_dict))
+
+                    # print ("show W_alpha")
+                    # print (sess.run(self.W_alpha))
+
+                    print ("show pos and neg")
+                    print (sess.run(self.pos, feed_dict=input_dict))
+                    print (sess.run(self.neg, feed_dict=input_dict))
+
+                    print ("Grad")
+                    # print (("W_gen Grad: ", sess.run(self.grad_Wgen, feed_dict=input_dict)))
+                    print (sess.run(self.grad_u_y, feed_dict=input_dict))
+                    print (sess.run(self.grad_p_y, feed_dict=input_dict))
+                    print (sess.run(self.grad_n_y, feed_dict=input_dict))
+                    
+
+                # self.train_step.run(input_dict)
+                sess.run(self.train_step, feed_dict = input_dict)
+                loss += sess.run(self.loss, feed_dict = input_dict)
+                if DEBUG:
+                    print ("After update grad:")
+                    print (sess.run(self.pos, feed_dict=input_dict))
+                    print (sess.run(self.neg, feed_dict=input_dict))
+                    print (sess.run(self.loss, feed_dict=input_dict))
                 
 
-            # self.train_step.run(input_dict)
-            sess.run(self.train_step, feed_dict = input_dict)
-            loss += sess.run(self.loss, feed_dict = input_dict)
-            if DEBUG:
-                print ("After update grad:")
-                print (sess.run(self.pos, feed_dict=input_dict))
-                print (sess.run(self.neg, feed_dict=input_dict))
-                print (sess.run(self.loss, feed_dict=input_dict))
-            
+                # print (sess.run(self.nce_loss, feed_dict=input_dict))
+                # print (sess.run(self.tag_loss, feed_dict=input_dict))
+                if DEBUG:
+                   pdb.set_trace()
 
-            # print (sess.run(self.nce_loss, feed_dict=input_dict))
-            # print (sess.run(self.tag_loss, feed_dict=input_dict))
-            if DEBUG:
-               pdb.set_trace()
+                # clip mu
+                if self.normclip:
+                    sess.run(self.clip_op_norm, feed_dict=input_dict)
 
-            # clip mu
-            if self.normclip:
-                sess.run(self.clip_op_norm, feed_dict=input_dict)
+                # clip var
+                if self.varclip:
+                    sess.run(self.clip_op_var, feed_dict=input_dict)
 
-            # clip var
-            if self.varclip:
-                sess.run(self.clip_op_var, feed_dict=input_dict)
+                if  (i+1) % self.show_num == 0:
+                    print ("Epoch %d, Loss: %f" % (i+1, np.sum(loss / self.show_num)))
+                    self.logger.info("Epoch %d, Loss: %f" % (i+1, np.sum(loss / self.show_num)))
+                    loss = 0.0
 
-            if  (i+1) % self.show_num == 0:
-                print ("Epoch %d, Loss: %f" % (i+1, np.sum(loss / self.show_num)))
-                self.logger.info("Epoch %d, Loss: %f" % (i+1, np.sum(loss / self.show_num)))
-                loss = 0.0
-
-                # save model
-                self.model_saver.save(sess, self.model_save_path, global_step=i+1)
+                    # save model
+                    self.model_saver.save(sess, self.model_save_path, global_step=i+1)
+                    self.model_saver.save(sess, self.model_save_path)
 
         return self.model_save_path
 
@@ -445,10 +443,6 @@ class TagConditionedEmbedding(object):
     def infer(self, inputs, model_path=None):
         print ("[+] start infer node embedding ...")
         self.logger.info("[+] start infer node embedding ...\n")
-
-        sess = tf.Session(graph=self.tensor_graph)
-        if model_path is None:
-            sess = self.sess
 
         input_dict = {
                 self.entity_placeholders["u_id"]: inputs["u"],
@@ -458,4 +452,6 @@ class TagConditionedEmbedding(object):
         }
         pdb.set_trace()
 
-        return sess.run(self.u_y, feed_dict=input_dict)
+        with tf.Session(graph=self.tensor_graph) as sess:
+            self.model_saver.restore(sess, model_path)
+            return sess.run(self.u_y, feed_dict=input_dict)

@@ -24,7 +24,6 @@ def params_handler(params, info, pre_res, **kwargs):
                 info["home_path"],
                 params["embedding_model"]["tag_embedding"]["tag_pre_train"])
 
-
     params["embedding_model"]["en_embed_size"] = info["en_embed_size"]
     params["embedding_model"]["tag_embed_size"] = info["tag_embed_size"]
     params["embedding_model"]["output_embed_size"] = info["output_embed_size"]
@@ -32,6 +31,11 @@ def params_handler(params, info, pre_res, **kwargs):
     params["embedding_model"]["batch_size"] = params["batch_size"]
     params["embedding_model"]["show_num"] = params["show_num"]
     params["embedding_model"]["logger"] = info["logger"]
+    
+    params["embedding_model"]["en_num"] = len(G_entity.nodes())
+    params["embedding_model"]["tag_num"] = len(G_tag.nodes())
+    info["en_num"] = params["embedding_model"]["en_num"]
+    info["tag_num"] = params["embedding_model"]["tag_num"]
 
     res = {} 
     res["entity_embedding_path"] = os.path.join(info["res_home"], "embeds.pkl")
@@ -49,10 +53,6 @@ def optimize(params, info, pre_res, **kwargs):
             os.path.join(info["network_folder"]["name"], info["network_folder"]["entity"]))  # G.node[id]["tags"] = binary lst tag 
     G_tag = dh.load_edge_as_graph(params["walk_file"], \
                 os.path.join(info["network_folder"]["name"], info["network_folder"]["tag"])) # walk file
-    params["embedding_model"]["en_num"] = len(G_entity.nodes())
-    params["embedding_model"]["tag_num"] = len(G_tag.nodes())
-    info["en_num"] = params["embedding_model"]["en_num"]
-    info["tag_num"] = params["embedding_model"]["tag_num"]
 
     # get features
     gf_handler = __import__("get_features." + params["get_features"]["func"], fromlist = ["sget_features"])
@@ -82,7 +82,7 @@ def optimize(params, info, pre_res, **kwargs):
 
     pdb.set_trace()
     # infer model
-    embeds = model.infer(bs.get_all())
+    embeds = model.infer(bs.get_all(), res["model_path"])
     dh.save_as_pickle(embeds, res["entity_embedding_path"])
     print ("[+] The entity embedding result is saved at %s" % (res["entity_embedding_path"]))
     info["logger"].info("[+] The entity embedding result is saved at %s" % (res["entity_embedding_path"]))

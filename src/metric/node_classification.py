@@ -47,15 +47,21 @@ def classification(X, params):
     return {"acc" : acc, "micro_f1": micro_f1, "macro_f1": macro_f1}
 
 
-def params_handler(params, info):
+def params_handler(params, info, pre_res):
     if "res_home" not in params:
         params["res_home"] = info["res_home"]
+    if "embeddings_file" in params:
+        params["embeddings_path"] = os.path.join(info["home_path"], params["embeddings_file"])
+    elif "infer" in pre_res and "entity_embedding_path" in pre_res["infer"]:
+        params["embeddings_path"] = pre_res["infer"]["entity_embedding_path"]
+    elif "optimize" in pre_res and "entity_embedding_path" in pre_res["optimize"]:
+        params["embeddings_path"] = pre_res["optimize"]["entity_embedding_path"]
     return {}
 
 
 @ct.module_decorator
 def metric(params, info, pre_res, **kwargs):
-    res = params_handler(params, info)
+    res = params_handler(params, info, pre_res)
 
     # load embeddings 
     if params["file_type"] == "txt":
@@ -67,7 +73,7 @@ def metric(params, info, pre_res, **kwargs):
         node_file.close()
         X = dh.load_embedding(embedding_path, params["file_type"], node_num)
     else:
-        X = dh.load_embedding(os.path.join(info["home_path"], params["embeddings_file"]), params["file_type"])
+        X = dh.load_embedding(params["embeddings_path"], params["file_type"])
 
     
     # results include: accuracy, micro f1, macro f1
