@@ -48,6 +48,8 @@ class NodeEmbedding(object):
         fn = "ckpt/GaussEmbedding_dim(%d)_numnodes(%d)_wout(%r)_spherical(%r)_normClip(%r)_varclip(%r)" \
                 % (self.dim, self.num_nodes, self.wout, self.spherical, self.normclip, self.varclip)
         self.model_save_path = os.path.join(params["res_home"], fn)
+        self.tensor_graph = tf.Graph()
+        self.build_graph()
 
 
     def build_graph(self):
@@ -58,10 +60,8 @@ class NodeEmbedding(object):
         var_trainable = 1-self.fixvar
         lower_logsig = math.log(self.lower_sig)
         upper_logsig = math.log(self.upper_sig)
-        self.tensor_graph = tf.Graph()
         with self.tensor_graph.as_default():
             tf.set_random_seed(random.randint(0, 1e9))
-
 
             with tf.name_scope("GaussEmbedding"):
                 with tf.name_scope("Input"):
@@ -171,6 +171,7 @@ class NodeEmbedding(object):
         print ("[+] Start gaussian embedding ...")
         self.logger.info("[+] Start gaussian embedding ...")
         loss = 0.0
+        pdb.set_trace()
         with tf.Session(graph = self.tensor_graph) as sess:
             sess.run(tf.global_variables_initializer())
             for i, batch in enumerate(get_batch()):

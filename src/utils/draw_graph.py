@@ -4,11 +4,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Ellipse
 
+import pdb
+
 class DrawGraph(object):
     """This class is for drawing picture in python
     """
     @staticmethod
-    def draw_ellipse(mus, std_sigs, row2name, save_path=None, k=1, filter=True):
+    def draw_ellipse(mus, std_sigs, row2name, save_path=None, k=1, filter=False):
         N = len(mus)
         """
         {0: 'Random', 1: 'Reservoir Sampling', 2: 'Dynamic Programming', 
@@ -37,7 +39,7 @@ class DrawGraph(object):
             new_dic={}
             count=0;
             for i in range(N):
-                if row2name[i]in show_nodes:
+                if row2name[i] in show_nodes:
                     new_dic[count]=row2name[i]
                     new_mus[count,:]=mus[i,:]
                     new_sig[count,:]=std_sigs[i,:]
@@ -58,13 +60,14 @@ class DrawGraph(object):
 
         # draw graph
         fig, ax = plt.subplots(subplot_kw = {"aspect": "equal"})
+        pdb.set_trace()
         for i in range(N):
             e = ells[i]
             ax.add_artist(e)
             e.set_clip_box(ax.bbox)
             e.set_alpha(np.random.rand())
             e.set_facecolor(np.random.rand(3))
-            ax.annotate(row2name[i], e.get_center(),fontsize=6)
+            ax.annotate(row2name[i], e.get_center(), fontsize=6)
         
         # set border for the picture
         lft = np.min(mus-k*2*std_sigs)-1.0

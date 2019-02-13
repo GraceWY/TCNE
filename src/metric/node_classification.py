@@ -75,7 +75,6 @@ def metric(params, info, pre_res, **kwargs):
     else:
         X = dh.load_embedding(params["embeddings_path"], params["file_type"])
 
-    
     # results include: accuracy, micro f1, macro f1
     metric_res = classification(X, params)
 

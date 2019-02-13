@@ -201,6 +201,11 @@ class DataHandler(object):
         with open(file_name, "wb") as fn:
             pickle.dump(data, fn)
 
+    @staticmethod
+    def load_as_pickle(file_name):
+        with open(file_name, "rb") as fn:
+            return pickle.load(fn)
+
 if __name__ == "__main__":
     folder = "/Users/wangyun/repos/TCNE/data/lc" 
     entity_edge_path = os.path.join(folder, "edge.dat")
