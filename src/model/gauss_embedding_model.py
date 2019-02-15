@@ -195,7 +195,9 @@ class NodeEmbedding(object):
                     loss = 0.0
 
                     # save model
+
                     self.saver.save(sess, self.model_save_path, global_step=i+1)
+
 
             return self.model_save_path, np.array(sess.run(self.mu)), np.array(sess.run(self.logsig))
 

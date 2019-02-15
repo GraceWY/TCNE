@@ -60,12 +60,12 @@
             "func": "metric",
             "params": {
                 "func": "node_classification",
-                "embeddings_file":"leetcode_deepwalk_emb.dat",
+                "embeddings_file":"bilibili1_deepwalk_onehot_emb.dat",
                 "file_type":"txt",
-                "data":"leetcode",
+                "data":"bilibili1",
                 "ground_truth":"label.txt",
                 "times":10,
-                "test_size":0.3,
+                "test_size":0.1,
                 "model":{
                     "func":"logistic"
                 }
