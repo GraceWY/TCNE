@@ -66,15 +66,8 @@ class DrawGraph(object):
             ax.add_artist(e)
             e.set_clip_box(ax.bbox)
             e.set_alpha(np.random.rand())
-            tmp_color=np.random.rand(3)
-            lower=0.3
-            upper=0.35
-            bar1=0.25
-            #while sum(tmp_color)<lower or sum(tmp_color)>upper :
-            while sum(tmp_color)>upper or tmp_color[0]>bar1 or tmp_color[1]>bar1 or tmp_color[2]>bar1:
-                tmp_color=np.random.rand(3)
-            e.set_facecolor(tmp_color)
-            ax.annotate(row2name[i], e.get_center(),fontsize=6)
+            e.set_facecolor(np.random.rand(3))
+            ax.annotate(row2name[i], e.get_center(), fontsize=6)
         
         # set border for the picture
         lft = np.min(mus-k*2*std_sigs)-1.0
