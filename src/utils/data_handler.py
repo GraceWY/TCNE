@@ -152,7 +152,7 @@ class DataHandler(object):
         row = 0
         with open(file_name, "r") as f:
             for line in f:
-                line = line.split()
+                line = line.strip()
                 if len(line) == 0:
                     continue
                 items = line.split("\t")
