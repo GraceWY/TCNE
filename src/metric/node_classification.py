@@ -24,12 +24,12 @@ def classification(X, params):
     #print(X_scaled.shape)
     print(len(y))
     print("y_0=",y[0])
-    acc = 0.0
-    micro_f1 = 0.0
-    macro_f1 = 0.0
     ts=0
     for i in range(9):
         ts=ts+0.1
+        acc = 0.0
+        micro_f1 = 0.0
+        macro_f1 = 0.0
         for _ in range(params["times"]):
             X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size = ts, stratify = y)
             clf = getattr(mll, params["model"]["func"])(X_train, y_train, params["model"])
