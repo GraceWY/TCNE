@@ -33,7 +33,7 @@ def optimize(params, info, pre_res, **kwargs):
     params["embedding_model"]["num_nodes"] = len(G.nodes())
     params["embedding_model"]["res_home"] = info["res_home"]
 
-    pdb.set_trace()
+    #pdb.set_trace()
 
     # model init
     print ("[+] The embedding model is model.%s" % (params["embedding_model"]["func"]))

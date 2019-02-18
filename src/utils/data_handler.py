@@ -168,7 +168,15 @@ class DataHandler(object):
         '''
         if file_type == "pickle":
             with open(file_path, "rb") as fn:
-                embedding = pickle.load(fn)
+                embedding_dict = pickle.load(fn)
+                emb = list(embedding_dict.values())
+                dim = len(emb[0])
+                embedding = np.zeros((node_num,dim))
+                nodes = embedding_dict.keys()
+                for node in nodes:
+                    embedding[node,:] = embedding_dict[node]
+                print(embedding.shape)
+
         elif file_type == "txt":
             with open(file_path,'r') as f:
                 lines = f.readlines()

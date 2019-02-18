@@ -63,7 +63,7 @@ def tag_walker(params, info, pre_res, **kwargs):
                 out_mapp[tag_pair] = 1 if tag_pair not in out_mapp \
                         else out_mapp[tag_pair] + 1 
 
-    pdb.set_trace()
+    # pdb.set_trace()
     with open(res["walk_file"], "w") as f:
         for k, v in out_mapp.items():
             f.write(k + "\t" + str(v) + "\n")

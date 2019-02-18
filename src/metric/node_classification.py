@@ -63,17 +63,20 @@ def params_handler(params, info, pre_res):
 def metric(params, info, pre_res, **kwargs):
     res = params_handler(params, info, pre_res)
 
+    # load node number
+    node_path=os.path.join(DATA_PATH, params["data"], "node.txt")
+    node_file=open(node_path, 'r')
+    nodes=node_file.readlines()
+    node_num=len(nodes)
+    node_file.close()
+
     # load embeddings 
     if params["file_type"] == "txt":
         embedding_path=os.path.join(DATA_PATH, "experiment", params["embeddings_file"])
-        node_path=os.path.join(DATA_PATH, params["data"], "node.txt")
-        node_file=open(node_path, 'r')
-        nodes=node_file.readlines()
-        node_num=len(nodes)
-        node_file.close()
         X = dh.load_embedding(embedding_path, params["file_type"], node_num)
     else:
-        X = dh.load_embedding(params["embeddings_path"], params["file_type"])
+        embedding_path = os.path.join(DATA_PATH, "experiment", params["embeddings_file"])
+        X = dh.load_embedding(embedding_path, params["file_type"],node_num)
 
     # results include: accuracy, micro f1, macro f1
     metric_res = classification(X, params)
