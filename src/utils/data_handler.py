@@ -77,7 +77,9 @@ class DataHandler(object):
         lst = []
         G = nx.Graph()
         id2name = DataHandler.load_name(name_path)
-
+        for k, v in id2name.items():
+            G.add_node(k, {"name": v})
+        
         with open(file_path, "r") as f:
             for line in f:
                 line = line.strip()
@@ -85,24 +87,27 @@ class DataHandler(object):
                     continue
                 items = line.split()
                 fid = int(items[0])
-                G.add_node(fid, {"name": id2name[fid]})
+                # G.add_node(fid, {"name": id2name[fid]})
                 tid = int(items[1])
-                G.add_node(tid, {"name": id2name[tid]})
+                # G.add_node(tid, {"name": id2name[tid]})
                 w = 1.0 if len(items) < 3 else float(items[2])
                 G.add_edge(fid, tid, weight=w)
         return G
 
 
     @staticmethod
-    def load_entity_as_graph(entity_edge_path, entity2tag_path, entity_name_path):
+    def load_entity_as_graph(entity_edge_path, entity2tag_path, entity_name_path, tag_name_path):
         """ entity_path: {int , int} (fid, tid)
             tag_entity_path: {int, int} (entity_id, tag_id)
             entity_name_path: {str, int} (entity name, id)
+            name_path: {str, int} (tag name, id)
 
             Return entity networkx G with tag_id_binary_vector as G.nodes[id]["tags"]
         """
         G = DataHandler.load_edge_as_graph(entity_edge_path, entity_name_path)
-
+        tag_id2name = DataHandler.load_name(tag_name_path)
+        tag_num = len(tag_id2name)
+        
         # load tag 01 vector for each entity
         mp = dict()
         with open(entity2tag_path, "r") as f:
@@ -117,16 +122,19 @@ class DataHandler(object):
                     mp[eid] = []
                 mp[eid].append(tid)
 
-        lst = [[] for _ in range(len(G.nodes()))] 
+        lst = [[] for k in range(len(G.nodes()))] 
         for k in mp.keys():
             lst[k] = mp[k]
-
-        mlb = MultiLabelBinarizer()
-        mat = mlb.fit_transform(lst)
+        
+        
+        #mlb = MultiLabelBinarizer()
+        #mat = mlb.fit_transform(lst)
 
         for n in G.nodes():
-            G.node[n]["tags"] = mat[n]
-
+            G.node[n]["tags"] = np.zeros(tag_num, dtype = np.int32)
+            for i in lst[n]:
+                G.node[n]["tags"][i] = 1
+        
         return G
 
 

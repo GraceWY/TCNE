@@ -196,7 +196,8 @@ class NodeEmbedding(object):
 
                     # save model
                     self.saver.save(sess, self.model_save_path, global_step=i+1)
-
+                    self.saver.save(sess, self.model_save_path)
+                    
             return self.model_save_path, np.array(sess.run(self.mu)), np.array(sess.run(self.logsig))
 
     def show_graph(self):
