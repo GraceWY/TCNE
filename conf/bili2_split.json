@@ -1,0 +1,28 @@
+{
+    "static_info" : {
+        "random_seed": 117,
+        "np_seed": 211,
+        "tag_embed_size": 2,
+        "en_embed_size": 32,
+        "output_embed_size": 34,
+        "network_folder": {
+            "name": "bilibili2",
+            "entity": "node.txt",
+            "tag": "tag.txt",
+            "edge": "edge.txt",
+            "mix_edge": "tag-edge.txt",
+            "entity_features": "features_tag.pkl",
+            "label": "label.txt"
+        }
+    },    
+   "run_modules": [
+        {
+            "func": "graph_split",
+            "params": {
+                "func": "two_bfs_split",
+                "save_path": "data/cold_start/b2",
+                "test_ratio": 0.1
+            }
+        }
+   ]
+}

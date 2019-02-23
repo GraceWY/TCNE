@@ -2,8 +2,8 @@
     "static_info" : {
         "random_seed": 117,
         "np_seed": 211,
-        "tag_embed_size": 32,
-        "en_embed_size": 32,
+        "tag_embed_size": 2,
+        "en_embed_size": 62,
         "output_embed_size": 64,
         "network_folder": {
             "name": "cora",
@@ -11,7 +11,7 @@
             "tag": "tag.txt",
             "edge": "edge.txt",
             "mix_edge": "tag-edge.txt",
-            "entity_features": "features.pkl",
+            "entity_features": "features_tag.pkl",
             "label": "label.txt"
         }
     },    
@@ -39,7 +39,7 @@
                 "func": "optimize_tag",
                 "batch_strategy": "weighted_edges_sampling",
                 "batch_size": 32,
-                "iterations": 1500,
+                "iterations": 2000,
                 "embedding_model": {
                     "func": "gauss_embedding_model",
                     "learning_rate": 0.01,
@@ -65,18 +65,18 @@
                 "func": "joint_optimize",
                 "batch_strategy": "tag_entity_sampling",
                 "batch_size": 64,
-                "iterations": 10000,
+                "iterations": 2000,
                 "show_num": 500,
                 "get_features": {
                     "func": "load_features"
                 },
                 "embedding_model": {
                     "func": "tag_conditioned_embedding_debug",
-                    "lambda": 1.0,
-                    "learning_rate": 0.1,
+                    "lambda": 0.0,
+                    "learning_rate": 0.01,
                     "optimizer": "AdamOptimizer",
                     "aggregator": {
-                        "agg_neighbor_num": 5
+                        "agg_neighbor_num": 10
                     },
                     "generative_net": {
                         "nce_k": 4 

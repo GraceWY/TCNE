@@ -20,7 +20,7 @@
             "func": "graph_split",
             "params": {
                 "func": "two_bfs_split",
-            	"save_path": "data/cold_start/lc",
+                "save_path": "data/cold_start/lc",
                 "test_ratio": 0.1
             }
         }

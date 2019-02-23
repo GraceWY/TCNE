@@ -84,8 +84,9 @@ def optimize(params, info, pre_res, **kwargs):
 
     # train model
     res["model_path"] = model.train(bs.get_batch)
-
-    pdb.set_trace()
+    
+    if info["debug_level"] == "DEBUG":
+        pdb.set_trace()
     # infer model
     embeds = model.infer(bs.get_all(), res["model_path"])
     dh.save_as_pickle(embeds, res["entity_embedding_path"])
