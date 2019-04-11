@@ -1,6 +1,8 @@
 import os
 import sys
 
+import pdb
+
 def get_output_details(HG, G, path):
     for i in path[1:-1]:
         assert i in G, str(i) + " | " + " ".join([str(i) for i in path])
@@ -9,7 +11,7 @@ def get_output_details(HG, G, path):
 
 def get_output(HG, path):
     tag1, tag2 = HG.node[path[0]]["oid"], HG.node[path[-1]]["oid"]
-    if tag1 >= tag2:
+    if tag1 > tag2:
         tag1, tag2 = tag2, tag1
     return str(tag1) + "\t" + str(tag2)
 

@@ -2,10 +2,10 @@
     "static_info" : {
         "random_seed": 157,
         "np_seed": 213,
-        "tag_embed_size": 2,
+        "tag_embed_size": 64,
         "en_embed_size": 32,
         "network_folder": {
-            "name": "lc",
+            "name": "leetcode",
             "entity": "entity.dat",
             "tag": "tag.dat",
             "edge": "edge.dat",
@@ -24,11 +24,10 @@
         {
             "func": "tag_walker",
             "params": {
-                "func": "hybrid_walker",
-                "c": 0.5,
-                "num_paths": 100,
-                "max_path_len": 5,
-                "alpha": 0.001 
+                "func": "simrank_walker",
+                "max_iter": 1000,
+                "eps": 1e-4,
+                "r": 0.5
             }    
         },
         {
@@ -58,11 +57,24 @@
             }
         },
         {
+            "func": "infer",
+            "params": {
+                "func": "get_tagembed_as_embed"
+            }
+        },
+        {
             "func": "metric",
             "params": {
-                "func": "visual_dist",
-                "timesOfSigma": 3
-            }    
+                "func": "node_classification",
+                "file_type": "pickle",
+                "data": "leetcode",
+                "ground_truth": "label.dat",
+                "times": 10,
+                "test_size": 0.3,
+                "model": {
+                    "func": "logistic"
+                }
+            }
         }
    ] 
 }
