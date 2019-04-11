@@ -12,6 +12,11 @@ import pdb
 def get_time_str():
     return datetime.now().strftime("%Y-%m-%d-%H:%M:%S.%f")
 
+def check_attr(params, attr, default):
+    if attr not in params:
+        params[attr] = default
+        return False
+    return True
 
 def symlink(src, dst):
     try:
@@ -20,6 +25,9 @@ def symlink(src, dst):
         os.remove(dst)
         os.symlink(src, dst)
 
+def mkdir(path):
+    if os.path.exists(path) == False:
+         os.makedirs(path)
 
 def get_logger(log_filename=None, module_name=__name__, level=logging.INFO):
     # select handler
@@ -66,6 +74,19 @@ def module_decorator(func):
     return wrapper
 
 
+def obj_dic(d):
+    top = type('new', (object,), d)
+    seqs = tuple, list, set, frozenset
+    for i, j in d.items():
+        if isinstance(j, dict):
+            setattr(top, i, obj_dic(j))
+        elif isinstance(j, seqs):
+            setattr(top, i,
+                type(j)(obj_dic(sj) if isinstance(sj, dict) else sj for sj in j))
+        else:
+            setattr(top, i, j)
+    return top
+	
 def reduce_dist_dim(mus, std_sigs, dim):
     """ Todo with PCA
     """

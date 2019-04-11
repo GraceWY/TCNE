@@ -1,0 +1,32 @@
+{
+    "static_info" : {
+        "random_seed": 157,
+        "np_seed": 213,
+        "tag_embed_size": 2,
+        "network_folder": {
+            "name": "cora",
+            "entity": "entity.txt",
+            "tag": "tag.txt",
+            "edge": "edge.txt",
+            "mix_edge": "tag-edge.txt",
+            "label": "label.txt"
+        }
+    },    
+   "run_modules": [
+        {
+            "func": "metric",
+            "params": {
+                "func": "node_classification",
+                "embeddings_file":"res/cora_full/2019-02-22-13:06:58.403744/embeds.pkl",
+                "file_type":"pickle",
+                "data":"cora",
+                "ground_truth":"label.txt",
+                "times":10,
+                "test_size":0.3,
+                "model":{
+                    "func":"logistic"
+                }
+            }    
+        }
+   ] 
+}

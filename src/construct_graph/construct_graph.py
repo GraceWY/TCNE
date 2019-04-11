@@ -32,20 +32,33 @@ def construct_graph(params, info, pre_res, **kwargs):
     info["logger"].info("The number of entities and tags are %d and %d, respectively" % (len(oid2en), len(oid2tag)))
 
     HG = init_graph("Hybrid Graph", params["directed"])
+    G = init_graph("Entity Graph", params["directed"])
+    
+    for k, v in oid2tag.items():
+        nt = o2n_mp["tag"][k]
+        HG.add_node(nt, {"type": "tag", "oid": k, "name": v})
+    
+    for k, v in oid2en.items():
+        ne = o2n_mp["entity"][k]
+        HG.add_node(ne, {"type": "entity", "oid": k, "name": v})
+        G.add_node(ne, {"type": "entity", "oid": k, "name": v})
+    
     for e, t, w in mix_edge_lst:
         ne = o2n_mp["entity"][e]
         nt = o2n_mp["tag"][t]
-        HG.add_node(ne, {"type": "entity", "oid": e, "name": oid2en[e]})
-        HG.add_node(nt, {"type": "tag", "oid": t, "name": oid2tag[t]})
+        # HG.add_node(ne, {"type": "entity", "oid": e, "name": oid2en[e]})
+        # HG.add_node(nt, {"type": "tag", "oid": t, "name": oid2tag[t]})
         HG.add_edge(ne, nt, weight=w)
 
-    G = init_graph("Entity Graph", params["directed"])
+    
     for f, t, w in edge_lst:
         nf = o2n_mp["entity"][f]
         nt = o2n_mp["entity"][t]
-        G.add_node(nf, {"type": "entity", "oid": f, "name": oid2en[f]})
-        G.add_node(nt, {"type": "entity", "oid": t, "name": oid2en[t]})
+        # G.add_node(nf, {"type": "entity", "oid": f, "name": oid2en[f]})
+        # G.add_node(nt, {"type": "entity", "oid": t, "name": oid2en[t]})
         G.add_edge(nf, nt, weight=w)
+
+    print(HG.number_of_nodes(), G.number_of_nodes())
 
     return {"HG": HG, "G": G}
 

@@ -18,8 +18,12 @@ def params_handler(params, info, pre_res, **kwargs):
     else:
         params["model_path"] = pre_res["optimize"]["model_path"]
     
+    #if "dim" not in params["get_features"]:
+    #    params["get_features"]["dim"] = params["tag_num"]
+    gf_handler = __import__("get_features." + params["get_features"]["func"], fromlist = ["get_features"])
+    features = gf_handler.get_features(params["get_features"], info)  # return numpy
     if "dim" not in params["get_features"]:
-        params["get_features"]["dim"] = params["tag_num"]
+        params["get_features"]["dim"] = features.shape[1]
 
     params["embedding_model"]["aggregator"]["feature_num"] = params["get_features"]["dim"]
     res["entity_embedding_path"] = os.path.join(info["res_home"], "embeds.pkl")
@@ -34,7 +38,8 @@ def params_handler(params, info, pre_res, **kwargs):
     
     G_entity = dh.load_entity_as_graph(os.path.join(info["network_folder"]["name"], info["network_folder"]["edge"]), \
             os.path.join(info["network_folder"]["name"], info["network_folder"]["mix_edge"]), \
-            os.path.join(info["network_folder"]["name"], info["network_folder"]["entity"])) 
+            os.path.join(info["network_folder"]["name"], info["network_folder"]["entity"]), \
+            os.path.join(info["network_folder"]["name"], info["network_folder"]["tag"]))
     G_tag = dh.load_edge_as_graph(params["walk_file"], \
             os.path.join(info["network_folder"]["name"], info["network_folder"]["tag"])) # walk file
 
@@ -44,13 +49,13 @@ def params_handler(params, info, pre_res, **kwargs):
     info["tag_num"] = params["embedding_model"]["tag_num"]
 
 
-    return res, G_entity, G_tag
+    return res, G_entity, G_tag, features
 
+@ct.module_decorator
 def infer(params, info, pre_res, **kwargs):
-    res, G_entity, G_tag = params_handler(params, info, pre_res)
-    gf_handler = __import__("get_features." + params["get_features"]["func"], fromlist = ["sget_features"])
-    features = gf_handler.get_features(params["get_features"], info)  # return numpy
-
+    res, G_entity, G_tag, features = params_handler(params, info, pre_res)
+    
+    
     model_handler = __import__("model." + params["embedding_model"]["func"], fromlist=["model"])
     model = model_handler.TagConditionedEmbedding(params["embedding_model"], features)
     bs_handler = __import__("batch_strategy." + params["batch_strategy"], fromlist=["batch_strategy"])

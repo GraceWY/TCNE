@@ -450,7 +450,7 @@ class TagConditionedEmbedding(object):
                 self.entity_placeholders["u_noise"]: inputs["u_noise"],
                 self.entity_placeholders["u_neighbors"]: inputs["u_neighbors"]
         }
-        pdb.set_trace()
+        #pdb.set_trace()
 
         with tf.Session(graph=self.tensor_graph) as sess:
             self.model_saver.restore(sess, model_path)

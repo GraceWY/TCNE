@@ -17,16 +17,16 @@ from utils.lib_ml import MachineLearningLib as mll
 from utils.env import *
 
 def classification(X, params):
+    res = {}
     X_scaled = scale(X)
     ground_truth_path=os.path.join(DATA_PATH,params["data"],params["ground_truth"])
     y = dh.load_ground_truth(ground_truth_path)
     y = y[:len(X)]
-    print(len(y))
-    print("y_0 =",y[0])
-    print("data: ",params["embeddings_file"])
-    ts=0
+    #print(len(y))
+    #print("y_0=",y[0])
+    ts = 0.0
     for i in range(9):
-        ts=ts+0.1
+        ts += 0.1
         acc = 0.0
         micro_f1 = 0.0
         macro_f1 = 0.0
@@ -43,9 +43,9 @@ def classification(X, params):
         micro_f1 /= float(params["times"])
         macro_f1 /= float(params["times"])
         print("test_size:",ts)
-        print(" acc ",  acc, " micro_f1 ", micro_f1, " macro_f1 ", macro_f1)
-    return {"acc" : acc, "micro_f1": micro_f1, "macro_f1": macro_f1}
-
+        res["%.2f" % ts] = {"acc" : acc, "micro_f1": micro_f1, "macro_f1": macro_f1}
+        print({"acc" : acc, "micro_f1": micro_f1, "macro_f1": macro_f1})
+    return res
 
 def params_handler(params, info, pre_res):
     if "res_home" not in params:

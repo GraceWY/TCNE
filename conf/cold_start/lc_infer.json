@@ -1,0 +1,74 @@
+{
+    "static_info" : {
+        "random_seed": 117,
+        "np_seed": 211,
+        "tag_embed_size": 2,
+        "en_embed_size": 32,
+        "output_embed_size": 34,
+        "network_folder": {
+            "name": "cold_start/lc/test",
+            "entity": "node.txt",
+            "tag": "tag.txt",
+            "edge": "edge.txt",
+            "mix_edge": "tag-edge.txt",
+            "entity_features": "features.pkl",
+            "label": "label.dat"
+        }
+    },    
+   "run_modules": [
+        {
+            "func": "infer",
+            "params": {
+                "func": "simple_infer",
+                "walk_file": "data/leetcode/hybrid_walk_nums_path(100)_max_path_len(5).dat",
+                "batch_strategy": "tag_entity_sampling",
+                "batch_size": 64,
+                "iterations": 1500,
+                "show_num": 100,
+                "get_features": {
+                    "func": "load_features"
+                },
+                "embedding_model": {
+                    "func": "tag_conditioned_embedding_debug",
+                    "model_path": "res/cold_start/lc_train/2019-02-22-09:20:52.752872/ckpt/TCNE_TagNum(34)_TagEmbedSize(2)_EnNum(506)_EnEmbedSize(32)_spherical(False)",
+                    "lambda": 1.0,
+                    "learning_rate": 0.1,
+                    "optimizer": "AdamOptimizer",
+                    "aggregator": {
+                        "agg_neighbor_num": 5
+                    },
+                    "generative_net": {
+                        "nce_k": 4 
+                    },
+                    "tag_embedding": {
+                        "tag_trainable": true,
+                        "spherical": false,
+                        "Closs": 1.0,
+                        "wout": true,
+                        "normclip": false,
+                        "varclip": false,
+                        "lower_sig": 0.02,
+                        "upper_sig": 5.0, 
+                        "norm_cap": 3.0,
+                        "mu_scale": 1,
+                        "var_scale": 0.05   
+                    }
+                }
+            }
+        },
+        {
+            "func": "metric",
+            "params": {
+                "func": "cold_start",
+                "n_train": 506,
+                "file_type":"pickle",
+                "data":"leetcode",
+                "ground_truth":"label.txt",
+                "times":10,
+                "model":{
+                    "func":"logistic"
+                }
+            }
+        }
+   ]
+}

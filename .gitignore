@@ -1,6 +1,8 @@
 */.DS_Store
 *.swp
 Untitled*
+data/cold_start/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

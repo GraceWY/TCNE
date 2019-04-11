@@ -23,6 +23,7 @@ def init(args, params, whole_params):
     info = {}
     for k, v in params.items():
         info[k] = v
+    info['debug_level'] = args.level
     info['time'] = ct.get_time_str()
     info['whole_params'] = whole_params
     info["conf_name"] = args.conf
@@ -60,9 +61,10 @@ def main():
         mdl_params = module["params"]
         print (mdl_name)
 
-        # pdb.set_trace()
-        #if mdl_name not in ["optimize","metric"]:
-          # continue
+        if info["debug_level"] == 'DEBUG':
+            pdb.set_trace()
+        # if mdl_name in ["construct_graph", "tag_walker", ""]:
+        #     continue
 
         mdl = __import__(mdl_name + "." + mdl_params["func"], fromlist=[mdl_name])
         res[mdl_name] = getattr(mdl, mdl_name)(mdl_params, info = info, pre_res = res, mdl_name = mdl_name)
