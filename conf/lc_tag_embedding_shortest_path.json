@@ -2,10 +2,10 @@
     "static_info" : {
         "random_seed": 157,
         "np_seed": 213,
-        "tag_embed_size": 2,
+        "tag_embed_size": 32,
         "en_embed_size": 32,
         "network_folder": {
-            "name": "lc",
+            "name": "leetcode",
             "entity": "entity.dat",
             "tag": "tag.dat",
             "edge": "edge.dat",
@@ -24,11 +24,8 @@
         {
             "func": "tag_walker",
             "params": {
-                "func": "hybrid_walker",
-                "c": 0.5,
-                "num_paths": 100,
-                "max_path_len": 5,
-                "alpha": 0.001 
+                "func": "shortest_path",
+                "max_path_len": 5
             }    
         },
         {
@@ -56,13 +53,6 @@
                     "var_scale": 1   
                 }
             }
-        },
-        {
-            "func": "metric",
-            "params": {
-                "func": "visual_dist",
-                "timesOfSigma": 3
-            }    
         }
    ] 
 }

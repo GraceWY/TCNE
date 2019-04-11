@@ -32,11 +32,24 @@ show_nodes = ["Tree","Two Pointers","Dynamic Programming",
 '''
 
 
+        show_nodes= ['Random', 'Reservoir Sampling', 'Dynamic Programming', 
+        'Greedy', 'Design', 'Queue', 'Hash Table',
+         'Linked List', 'Stack', 'Heap', 'Array', 
+         'Depth-first Search', 'Tree', 'Binary Search Tree',
+          'Map', 'Binary Search', 'Graph', 'String', 
+          'Two Pointers', 'Trie', 'Breadth-first Search', 
+          'Union Find', 'Math', 'Recursion', 
+          'Bit Manipulation', 'Binary Indexed Tree', 
+          'Segment Tree', 'Divide and Conquer', 'Sort', 
+          'Rejection Sampling', 'Backtracking', 'Brainteaser', 
+          'Minimax', 'Topological Sort']
+
+'''
 show_nodes = ["Tree","Two Pointers","Dynamic Programming",
               "Segment Tree","Queue","Array","Union Find",
               "Binary Search Tree","Greedy","Math","Design",
               "Depth-first Search","Divide and Conquer"]
-
+'''
 class DrawGraph(object):
     """This class is for drawing picture in python
     """
@@ -95,8 +108,9 @@ class DrawGraph(object):
             e.set_facecolor(np.array(color_list[random.randint(0,8)])/255)
             #ax.annotate(row2name[i], e.get_center(), fontsize = 15)
             ellipse_x, ellipse_y = e.get_center()            
-            ellipse_y += std_sigs[i,1]*2+0.3
-            #ax.annotate(row2name[i], (ellipse_x,ellipse_y), fontsize = 15)
+
+            # ellipse_y += std_sigs[i,1]*2+0.3
+            ax.annotate(row2name[i], (ellipse_x,ellipse_y), fontsize = 10)
 
         
         # set border for the picture

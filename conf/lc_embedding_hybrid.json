@@ -2,10 +2,10 @@
     "static_info" : {
         "random_seed": 157,
         "np_seed": 213,
-        "tag_embed_size": 2,
+        "tag_embed_size": 128,
         "en_embed_size": 32,
         "network_folder": {
-            "name": "lc",
+            "name": "leetcode",
             "entity": "entity.dat",
             "tag": "tag.dat",
             "edge": "edge.dat",
@@ -58,11 +58,24 @@
             }
         },
         {
+            "func": "infer",
+            "params": {
+                "func": "get_tagembed_as_embed"
+            }
+        },
+        {
             "func": "metric",
             "params": {
-                "func": "visual_dist",
-                "timesOfSigma": 3
-            }    
+                "func": "node_classification",
+                "file_type": "pickle",
+                "data": "leetcode",
+                "ground_truth": "label.dat",
+                "times": 10,
+                "test_size": 0.3,
+                "model": {
+                    "func": "logistic"
+                }
+            }
         }
    ] 
 }

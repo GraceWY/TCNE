@@ -1,0 +1,28 @@
+{
+    "static_info" : {
+        "random_seed": 157,
+        "np_seed": 213,
+        "tag_embed_size": 2,
+        "en_embed_size": 32,
+        "network_folder": {
+            "name": "leetcode",
+            "entity": "entity.dat",
+            "tag": "tag.dat",
+            "edge": "edge.dat",
+            "mix_edge": "mix_edge.dat",
+            "label": "label.dat"
+        }
+    },    
+   "run_modules": [
+        {
+            "func": "metric",
+            "params": {
+                "func": "visual_dist",
+                "timesOfSigma": 1,
+                "path": "/Users/wangyun/repos/TCNE/res/lc_tag_embedding_simrank/2019-04-10-17:07:21.718939",
+                "mus": "mus.pkl",
+                "sigs": "sigs.pkl"
+            }    
+        }
+   ] 
+}

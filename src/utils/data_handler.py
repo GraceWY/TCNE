@@ -126,7 +126,6 @@ class DataHandler(object):
         for k in mp.keys():
             lst[k] = mp[k]
         
-        
         #mlb = MultiLabelBinarizer()
         #mat = mlb.fit_transform(lst)
 
@@ -221,6 +220,87 @@ class DataHandler(object):
     def load_as_pickle(file_name):
         with open(file_name, "rb") as fn:
             return pickle.load(fn)
+
+    @staticmethod
+    def get_eid2tid(file_name):
+        '''
+            Load {entity \t tag} file
+            Return the matrix where i-th row is a list including the tag ids 
+        '''
+        e2t = {}
+        node_num = 0
+        with open(file_name, "r") as fn:
+            for line in fn:
+                line = line.strip()
+                if len(line) == 0:
+                    continue
+                items = line.split()
+                it1, it2 = int(items[0]), int(items[1])
+
+                if it1 not in e2t:
+                    e2t[it1] = []
+                    if node_num < it1:
+                        node_num = it1
+                e2t[it1].append(it2)
+
+        node_num += 1
+
+        #pdb.set_trace()
+        #print ("node_num: %d", node_num)
+        #print ("dict_size: %d", len(e2t))
+
+        lst = [[] for k in range(node_num)]
+
+        for k in e2t.keys():
+            lst[k] = e2t[k]
+
+        return lst
+
+    @staticmethod
+    def get_tagonehot(file_name):
+        '''
+            Load mix edge (entity \t tag) to a dictionary
+            Key=entity, Value={tag id}
+
+            Return tag one hot embedding as each node embedding
+        '''
+        lst = DataHandler.get_eid2tid(file_name)
+
+        mlb = MultiLabelBinarizer()
+        mat = mlb.fit_transform(lst)
+
+        return mat
+
+    @staticmethod
+    def get_tagembed(file_name, e2t_mat):
+        """
+            Load tag embedding file and e2t_mat
+            Return node embedding as the average of relative tag embeddings
+        """
+
+        # Load tag embedding
+        with open(file_name, "rb") as fn:
+            tag_embed = np.array(pickle.load(fn))
+
+        assert len(tag_embed) > 0, "The tag embedding file is null."
+
+        
+        # for these node without tags
+        u_embed = np.mean(tag_embed, axis=0)
+
+        node_embed = []
+
+        for l in e2t_mat:
+            if len(l) == 0:
+                node_embed.append(u_embed)
+            else:
+                tmp = tag_embed[l, :]
+                tmp_m = np.mean(tag_embed[l, :], axis=0)
+                if len(np.shape(tmp_m)) != 1:
+                    pdb.set_trace()
+                node_embed.append(np.mean(tag_embed[l, :], axis=0))
+
+        return node_embed
 
 if __name__ == "__main__":
     folder = "/Users/wangyun/repos/TCNE/data/lc" 

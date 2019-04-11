@@ -1,0 +1,40 @@
+{
+    "static_info" : {
+        "random_seed": 117,
+        "np_seed": 211,
+        "tag_embed_size": 2,
+        "en_embed_size": 32,
+        "output_embed_size": 34,
+        "network_folder": {
+            "name": "leetcode",
+            "entity": "entity.dat",
+            "tag": "tag.dat",
+            "edge": "edge.dat",
+            "mix_edge": "mix_edge.dat",
+            "entity_features": "features.pkl",
+            "label": "label.dat"
+        }
+    },    
+   "run_modules": [
+        {
+            "func": "infer",
+            "params": {
+                "func": "get_tagonehot_as_embed"
+            }
+        },
+        {
+            "func": "metric",
+            "params": {
+                "func": "node_classification",
+                "file_type":"pickle",
+                "data":"leetcode",
+                "ground_truth":"label.dat",
+                "times":10,
+                "test_size":0.3,
+                "model":{
+                    "func":"logistic"
+                }
+            }
+        }
+   ]
+}

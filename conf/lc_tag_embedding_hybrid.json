@@ -5,7 +5,7 @@
         "tag_embed_size": 2,
         "en_embed_size": 32,
         "network_folder": {
-            "name": "lc",
+            "name": "leetcode",
             "entity": "entity.dat",
             "tag": "tag.dat",
             "edge": "edge.dat",
@@ -56,13 +56,6 @@
                     "var_scale": 1   
                 }
             }
-        },
-        {
-            "func": "metric",
-            "params": {
-                "func": "visual_dist",
-                "timesOfSigma": 3
-            }    
         }
    ] 
 }

@@ -65,9 +65,9 @@ def main():
 
         if info["debug_level"] == 'DEBUG':
             pdb.set_trace()
-        # if mdl_name in ["construct_graph", "tag_walker", ""]:
-        #     continue
 
+        #if mdl_name in ["metric"]:
+        #    continue
 
         mdl = __import__(mdl_name + "." + mdl_params["func"], fromlist=[mdl_name])
         res[mdl_name] = getattr(mdl, mdl_name)(mdl_params, info = info, pre_res = res, mdl_name = mdl_name)

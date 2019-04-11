@@ -118,6 +118,7 @@ def label2color(label):
         color[i]=random_Value[pos]
     return color
 
+
 if __name__ == "__main__":
     X = np.array([[1, 1, 1], [2, 2, 2], [3, 3, 3], [4, 4, 4]])
     nX = np.array([[1, 1, 1], [2, 2, 2], [3, 3, 3], [4, 4, 4]])
