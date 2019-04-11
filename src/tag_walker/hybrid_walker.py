@@ -64,8 +64,10 @@ def tag_walker(params, info, pre_res, **kwargs):
                         else out_mapp[tag_pair] + 1 
 
 
+
     if info["debug_level"] == 'DEBUG':
         pdb.set_trace()
+
 
     with open(res["walk_file"], "w") as f:
         for k, v in out_mapp.items():
