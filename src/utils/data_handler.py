@@ -189,7 +189,7 @@ class DataHandler(object):
                 for i in range(1,line_num):
                     x=lines[i].split()
                     if int(x[0])==11725: continue
-                    if int(x[0])==0: print("found")
+                    #if int(x[0])==0: print("found")
                     embedding[int(x[0]),:]=list(map(float,x[1:]))
 
         return embedding

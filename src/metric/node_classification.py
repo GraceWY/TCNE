@@ -21,9 +21,9 @@ def classification(X, params):
     ground_truth_path=os.path.join(DATA_PATH,params["data"],params["ground_truth"])
     y = dh.load_ground_truth(ground_truth_path)
     y = y[:len(X)]
-    #print(X_scaled.shape)
     print(len(y))
-    print("y_0=",y[0])
+    print("y_0 =",y[0])
+    print("data: ",params["embeddings_file"])
     ts=0
     for i in range(9):
         ts=ts+0.1
@@ -31,7 +31,7 @@ def classification(X, params):
         micro_f1 = 0.0
         macro_f1 = 0.0
         for _ in range(params["times"]):
-            X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size = ts, stratify = y)
+            X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size = ts, stratify = y,random_state=params["np_seed"])
             clf = getattr(mll, params["model"]["func"])(X_train, y_train, params["model"])
             ret = mll.infer(clf, X_test, y_test)
             acc += ret[1]
@@ -43,7 +43,7 @@ def classification(X, params):
         micro_f1 /= float(params["times"])
         macro_f1 /= float(params["times"])
         print("test_size:",ts)
-        print({"acc" : acc, "micro_f1": micro_f1, "macro_f1": macro_f1})
+        print(" acc ",  acc, " micro_f1 ", micro_f1, " macro_f1 ", macro_f1)
     return {"acc" : acc, "micro_f1": micro_f1, "macro_f1": macro_f1}
 
 
@@ -56,6 +56,7 @@ def params_handler(params, info, pre_res):
         params["embeddings_path"] = pre_res["infer"]["entity_embedding_path"]
     elif "optimize" in pre_res and "entity_embedding_path" in pre_res["optimize"]:
         params["embeddings_path"] = pre_res["optimize"]["entity_embedding_path"]
+    params["np_seed"]=info["np_seed"]
     return {}
 
 

@@ -1,0 +1,75 @@
+{
+    "static_info" : {
+        "random_seed": 157,
+        "np_seed": 213,
+        "tag_embed_size": 2,
+        "network_folder": {
+            "name": "lc",
+            "entity": "entity.dat",
+            "tag": "tag.dat",
+            "edge": "edge.dat",
+            "mix_edge": "mix_edge.dat",
+            "label": "label.dat"
+        }
+    },    
+   "run_modules": [
+        {
+            "func": "construct_graph",
+            "params": {
+                "func": "construct_graph",
+                "directed": false
+            } 
+        },
+        {
+            "func": "tag_walker",
+            "params": {
+                "func": "hybrid_walker",
+                "c": 0.5,
+                "num_paths": 100,
+                "max_path_len": 5,
+                "alpha": 0.001 
+            }    
+        },
+        {
+            "func": "optimize",
+            "params": {
+                "func": "optimize_tag",
+                "batch_strategy": "weighted_edges_sampling",
+                "batch_size": 4,
+                "iterations": 500,
+                "embedding_model": {
+                    "func": "gauss_embedding_model",
+                    "learning_rate": 0.01,
+                    "optimizer": "AdamOptimizer",
+                    "Closs": 2.0,
+                    "spherical": false,
+                    "fixvar": false,
+                    "wout": true,
+                    "normclip": false,
+                    "varclip": false,
+                    "show_num": 100,
+                    "lower_sig": 0.02,
+                    "upper_sig": 3.0, 
+                    "norm_cap": 3.0,
+                    "mu_scale": 20,
+                    "var_scale": 1   
+                }
+            }
+        },
+        {
+            "func": "metric",
+            "params": {
+                "func": "node_classification",
+                "embeddings_file":"b2_embeddings.emb",
+                "file_type":"txt",
+                "data":"bilibili2",
+                "ground_truth":"label.txt",
+                "times":10,
+                "test_size":0.1,
+                "model":{
+                    "func":"logistic"
+                }
+            }    
+        }
+   ] 
+}
