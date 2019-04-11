@@ -47,7 +47,9 @@ def init(args, params, whole_params):
 
 def main():
     parser = argparse.ArgumentParser(formatter_class = argparse.RawTextHelpFormatter)
+
     parser.add_argument("--conf", type = str, default = "lc")
+
     parser.add_argument("--level", type = str, default = "INFO", help="log level = INFO | DEBUG")
     args = parser.parse_args()
     params = dh.load_json(os.path.join(CONF_PATH, args.conf + ".json"))
@@ -60,10 +62,13 @@ def main():
         mdl_name = module["func"]
         mdl_params = module["params"]
         print (mdl_name)
+
         if info["debug_level"] == 'DEBUG':
             pdb.set_trace()
+
         #if mdl_name in ["metric"]:
         #    continue
+
         mdl = __import__(mdl_name + "." + mdl_params["func"], fromlist=[mdl_name])
         res[mdl_name] = getattr(mdl, mdl_name)(mdl_params, info = info, pre_res = res, mdl_name = mdl_name)
 

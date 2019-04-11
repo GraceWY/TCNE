@@ -172,6 +172,7 @@ class NodeEmbedding(object):
         self.logger.info("[+] Start gaussian embedding ...")
         loss = 0.0
         # pdb.set_trace()
+
         with tf.Session(graph = self.tensor_graph) as sess:
             sess.run(tf.global_variables_initializer())
             for i, batch in enumerate(get_batch()):

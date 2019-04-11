@@ -9,6 +9,8 @@ from utils.draw_graph import DrawGraph as dg
 import pdb
 
 
+
+
 def params_handler(params, info):
     if "res_home" not in params:
         params["res_home"] = info["res_home"]
@@ -43,6 +45,7 @@ def metric(params, info, pre_res, **kwargs):
 
     row2name = dh.load_name(os.path.join(info["network_folder"]["name"], info["network_folder"]["tag"]))
 
+
     assert len(mus) > 0, "The mus file has no data"
 
     N = len(mus)
@@ -59,6 +62,7 @@ def metric(params, info, pre_res, **kwargs):
         mus, std_sigs = ct.reduce_dist_dim(mus, std_sigs, 2)
 
 
+
     if params["draw_ellipse"]:
         res["res_path"] = os.path.join(params["res_home"], "dist_ellipse.pdf")
         dg.draw_ellipse(mus, std_sigs, row2name, res["res_path"], params["timesOfSigma"], params["filter"])
@@ -66,5 +70,8 @@ def metric(params, info, pre_res, **kwargs):
         res["res_path"] = os.path.join(params["res_home"], "dist_scatter.pdf")
         dg.draw_scatter(mus, std_sigs, row2name, res["res_path"], params["timesOfSigma"], params["filter"])
 
+
+    res["scatter_path"] = os.path.join(params["res_home"], "scatter.pdf")
+    dg.draw_scatter(mus, std_sigs, row2name, res["scatter_path"])
 
     return res

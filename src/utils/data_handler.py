@@ -175,7 +175,15 @@ class DataHandler(object):
         '''
         if file_type == "pickle":
             with open(file_path, "rb") as fn:
-                embedding = pickle.load(fn)
+                embedding_dict = pickle.load(fn)
+                emb = list(embedding_dict.values())
+                dim = len(emb[0])
+                embedding = np.zeros((node_num,dim))
+                nodes = embedding_dict.keys()
+                for node in nodes:
+                    embedding[node,:] = embedding_dict[node]
+                print(embedding.shape)
+
         elif file_type == "txt":
             with open(file_path,'r') as f:
                 lines = f.readlines()
@@ -188,7 +196,7 @@ class DataHandler(object):
                 for i in range(1,line_num):
                     x=lines[i].split()
                     if int(x[0])==11725: continue
-                    if int(x[0])==0: print("found")
+                    #if int(x[0])==0: print("found")
                     embedding[int(x[0]),:]=list(map(float,x[1:]))
 
         return embedding
