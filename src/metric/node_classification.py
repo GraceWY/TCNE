@@ -18,11 +18,29 @@ from utils.env import *
 
 import pdb
 
+
+def params_handler(params, info, pre_res):
+    if "res_home" not in params:
+        params["res_home"] = info["res_home"]
+    if "embeddings_file" in params:
+        params["embeddings_path"] = os.path.join(info["home_path"], params["embeddings_file"])
+    elif "infer" in pre_res and "entity_embedding_path" in pre_res["infer"]:
+        params["embeddings_path"] = pre_res["infer"]["entity_embedding_path"]
+    elif "optimize" in pre_res and "entity_embedding_path" in pre_res["optimize"]:
+        params["embeddings_path"] = pre_res["optimize"]["entity_embedding_path"]
+
+    if "ground_truth" not in params:
+        params["ground_truth"] = os.path.join(info["network_folder"]["name"], info["network_folder"]["label"])
+
+    if "file_type" not in params:
+        params["file_type"] = "pickle"
+    return {}
+
+
 def classification(X, params):
     res = {}
     X_scaled = scale(X)
-    ground_truth_path=os.path.join(DATA_PATH,params["data"],params["ground_truth"])
-    y = dh.load_ground_truth(ground_truth_path)
+    y = dh.load_ground_truth(params["ground_truth"])
     y = y[:len(X)]
     #print(X_scaled.shape)
     print(len(y))
@@ -50,17 +68,6 @@ def classification(X, params):
         print({"acc" : acc, "micro_f1": micro_f1, "macro_f1": macro_f1})
     return res
 
-
-def params_handler(params, info, pre_res):
-    if "res_home" not in params:
-        params["res_home"] = info["res_home"]
-    if "embeddings_file" in params:
-        params["embeddings_path"] = os.path.join(info["home_path"], params["embeddings_file"])
-    elif "infer" in pre_res and "entity_embedding_path" in pre_res["infer"]:
-        params["embeddings_path"] = pre_res["infer"]["entity_embedding_path"]
-    elif "optimize" in pre_res and "entity_embedding_path" in pre_res["optimize"]:
-        params["embeddings_path"] = pre_res["optimize"]["entity_embedding_path"]
-    return {}
 
 
 @ct.module_decorator

@@ -27,7 +27,10 @@ def params_handler(params, info):
         params["filter"] = False
 
     if "draw_ellipse" not in params:
-        params["draw_ellipse"] = true
+        params["draw_ellipse"] = True
+
+    if "notation" not in params:
+        params["notation"] = True
 
     return {}
 
@@ -61,10 +64,10 @@ def metric(params, info, pre_res, **kwargs):
 
     if params["draw_ellipse"]:
         res["res_path"] = os.path.join(params["res_home"], "dist_ellipse.pdf")
-        dg.draw_ellipse(mus, std_sigs, row2name, res["res_path"], params["timesOfSigma"], params["filter"])
+        dg.draw_ellipse(mus, std_sigs, row2name, res["res_path"], params["timesOfSigma"], params["filter"], params["notation"])
     else:
         res["res_path"] = os.path.join(params["res_home"], "dist_scatter.pdf")
-        dg.draw_scatter(mus, std_sigs, row2name, res["res_path"], params["timesOfSigma"], params["filter"])
+        dg.draw_scatter(mus, std_sigs, row2name, res["res_path"], params["timesOfSigma"], params["filter"], params["notation"])
 
 
     return res
