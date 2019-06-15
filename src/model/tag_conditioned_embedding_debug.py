@@ -12,7 +12,8 @@ import pdb
 
 INT=tf.int32
 FLOAT = np.float64
-DEBUG = False 
+DEBUG = True 
+PRINT_DEBUG = False
 
 class TagConditionedEmbedding(object):
     """ Tag conditioned Network Embedding
@@ -328,19 +329,22 @@ class TagConditionedEmbedding(object):
 
             """ Init the parameters of tag distribution
             """
-            if len(self.tag_pre_train) != 0 and not DEBUG:
+            if len(self.tag_pre_train) != 0:
                 print ("[+] reload pre train parameters of tag distribution from %s" % (self.tag_pre_train))
                 self.logger.info("[+] save pre train parameters of tag distribution from %s\n" % (self.tag_pre_train))
-                print (sess.run(self.mu)[0, :])
-                self.tag_saver.restore(sess, self.tag_pre_train)
-                print (sess.run(self.mu)[0, :])
+                if PRINT_DEBUG:
+                    print ("######################## before load mu\n")
+                    print (sess.run(self.mu)[0, :])
 
-            if DEBUG:
-                print ("######################## mu\n")
-                print (sess.run(self.mu))
-                print ("######################## logsig\n")
-                print (sess.run(self.logsig))
-                pdb.set_trace()
+                self.tag_saver.restore(sess, self.tag_pre_train)
+
+                if PRINT_DEBUG:
+                    print ("######################## After load mu\n")
+                    print (sess.run(self.mu)[0, :])
+
+                    print ("######################## logsig\n")
+                    print (sess.run(self.logsig)[0, :])
+                    pdb.set_trace()
 
             for i, batch in enumerate(get_batch()):
                 tag_input_dict = {
@@ -363,8 +367,9 @@ class TagConditionedEmbedding(object):
                     self.entity_placeholders["n_neighbors"]: batch["en_n_neighbors"]
                 }
 
-                # print ("batch: ", batch)
-                # pdb.set_trace()
+                if PRINT_DEBUG:
+                    print ("batch: ", batch)
+                    pdb.set_trace()
 
                 input_dict = {}
                 for k, v in tag_input_dict.items():
@@ -373,7 +378,7 @@ class TagConditionedEmbedding(object):
                     input_dict[k] = v
 
                 
-                if DEBUG:
+                if PRINT_DEBUG:
                     print ("Loss, gradient before")
                     print ("show u_y")
                     print (batch["en_u"])
@@ -408,7 +413,7 @@ class TagConditionedEmbedding(object):
                 # self.train_step.run(input_dict)
                 sess.run(self.train_step, feed_dict = input_dict)
                 loss += sess.run(self.loss, feed_dict = input_dict)
-                if DEBUG:
+                if PRINT_DEBUG:
                     print ("After update grad:")
                     print (sess.run(self.pos, feed_dict=input_dict))
                     print (sess.run(self.neg, feed_dict=input_dict))
@@ -417,7 +422,7 @@ class TagConditionedEmbedding(object):
 
                 # print (sess.run(self.nce_loss, feed_dict=input_dict))
                 # print (sess.run(self.tag_loss, feed_dict=input_dict))
-                if DEBUG:
+                if PRINT_DEBUG:
                    pdb.set_trace()
 
                 # clip mu
