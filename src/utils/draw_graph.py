@@ -6,6 +6,7 @@ from matplotlib.patches import Ellipse
 import pdb
 import random
 
+FONT_SIZE=10
 #color_list=[[247,252,240],[224,243,219],[204,235,197],[168,221,181],\
 #[123,204,196],[78,179,211],[43,140,190],[8,104,172],[8,64,129]]
 
@@ -31,13 +32,13 @@ show_nodes = ["Tree","Two Pointers","Dynamic Programming",
               "Depth-first Search","Divide and Conquer"]
 '''
 
-        show_nodes= ['Random', 'Reservoir Sampling', 'Dynamic Programming', 
-        'Greedy', 'Design', 'Queue', 'Hash Table',
-         'Linked List', 'Stack', 'Heap', 'Array', 
+show_nodes= ['Dynamic Programming', 
+        'Greedy', 
+         'Linked List', 'Heap', 'Array', 
          'Depth-first Search', 'Tree', 'Binary Search Tree',
-          'Map', 'Binary Search', 'Graph', 'String', 
-          'Two Pointers', 'Trie', 'Breadth-first Search', 
-          'Union Find', 'Math', 'Recursion', 
+          'Binary Search', 
+          'Two Pointers', 'Trie', "Queue",
+           'Recursion',  
           'Bit Manipulation', 'Binary Indexed Tree', 
           'Segment Tree', 'Divide and Conquer', 'Sort', 
           'Rejection Sampling', 'Backtracking', 'Brainteaser', 
@@ -53,7 +54,7 @@ class DrawGraph(object):
     """This class is for drawing picture in python
     """
     @staticmethod
-    def draw_ellipse(mus, std_sigs, row2name, save_path=None, k=1, filter=True):
+    def draw_ellipse(mus, std_sigs, row2name, save_path=None, k=1, filter=True, notation=True):
         N = len(mus)
         """
         {0: 'Random', 1: 'Reservoir Sampling', 2: 'Dynamic Programming', 
@@ -103,12 +104,13 @@ class DrawGraph(object):
             ax.add_artist(e)
             e.set_clip_box(ax.bbox)
             #e.set_alpha(np.random.rand())
-            e.set_alpha(random.randint(3,9)/10)
+            e.set_alpha(random.randint(4,9)/10)
             e.set_facecolor(np.array(color_list[random.randint(0,8)])/255)
             #ax.annotate(row2name[i], e.get_center(), fontsize = 15)
             ellipse_x, ellipse_y = e.get_center()            
             # ellipse_y += std_sigs[i,1]*2+0.3
-            ax.annotate(row2name[i], (ellipse_x,ellipse_y), fontsize = 10)
+            if notation:
+                ax.annotate(row2name[i], (ellipse_x,ellipse_y), fontsize = FONT_SIZE)
 
         
         # set border for the picture
@@ -134,7 +136,7 @@ class DrawGraph(object):
 
 
     @staticmethod
-    def draw_scatter(mus, std_sigs, row2name, save_path=None, k=3, filter = True):
+    def draw_scatter(mus, std_sigs, row2name, save_path=None, k=3, filter = True, notation=True):
         N = len(mus)
         if filter==True :
             
@@ -160,7 +162,8 @@ class DrawGraph(object):
         ax.scatter(mus[:,0], mus[:,1], c='b')
         for i in range(N):
             print("point",i)
-            #ax.annotate(row2name[i],(mus[i][0] + 0.2, mus[i][1] + 0.2),fontsize = 15)
+            if notation:
+                ax.annotate(row2name[i],(mus[i][0] + 0.2, mus[i][1] + 0.2),fontsize = FONT_SIZE)
         
 
         lft = np.min(mus-k*2*std_sigs)-0.2

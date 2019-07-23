@@ -1,7 +1,7 @@
 {
     "static_info" : {
-        "random_seed": 157,
-        "np_seed": 213,
+        "random_seed": 311,
+        "np_seed": 3,
         "tag_embed_size": 2,
         "en_embed_size": 32,
         "network_folder": {
@@ -18,12 +18,13 @@
             "func": "metric",
             "params": {
                 "func": "visual_dist",
-                "timesOfSigma": 3,
+                "timesOfSigma": 1,
                 "path": "/Users/wangyun/repos/TCNE/res/lc_tag_embedding_hybrid/2019-04-11-14:06:45.341822",
                 "mus": "mus.pkl",
                 "sigs": "sigs.pkl",
-                "filter": false,
-                "draw_ellipse": true
+                "filter": true,
+                "draw_ellipse":true,
+                "notation": false 
             }    
         }
    ] 

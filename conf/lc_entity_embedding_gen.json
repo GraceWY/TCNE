@@ -1,0 +1,71 @@
+{
+    "static_info" : {
+        "random_seed": 117,
+        "np_seed": 211,
+        "tag_embed_size": 64,
+        "en_embed_size": 32,
+        "output_embed_size": 64,
+        "network_folder": {
+            "name": "leetcode",
+            "entity": "entity.dat",
+            "tag": "tag.dat",
+            "edge": "edge.dat",
+            "mix_edge": "mix_edge.dat",
+            "entity_features": "features.pkl",
+            "label": "label.dat"
+        }
+    },    
+   "run_modules": [
+       {
+           "func": "optimize",
+           "params": {
+               "func": "joint_optimize",
+               "batch_strategy": "tag_entity_sampling",
+               "batch_size": 16,
+               "iterations": 101,
+               "show_num": 100,
+               "tag_walk_file": "data/leetcode/hybrid_walk_nums_path(100)_max_path_len(5).dat",
+               "get_features": {
+                   "func": "load_features"
+               },
+               "embedding_model": {
+                   "func": "tag_conditioned_embedding_debug",
+                   "lambda": 1.0,
+                   "learning_rate": 0.1,
+                   "optimizer": "AdamOptimizer",
+                   "aggregator": {
+                       "agg_neighbor_num": 5
+                   },
+                   "generative_net": {
+                       "nce_k": 4
+                   },
+                   "tag_embedding": {
+                       "tag_pre_train": "res/lc_embedding_hybrid/2019-04-10-16:28:12.861264/ckpt/GaussEmbedding_dim(64)_numnodes(34)_wout(True)_spherical(False)_normClip(False)_varclip(False)-6000",
+                       "tag_trainable": false,
+                       "spherical": false,
+                       "Closs": 1.0,
+                       "wout": true,
+                       "normclip": false,
+                       "varclip": false,
+                       "lower_sig": 0.02,
+                       "upper_sig": 5.0,
+                       "norm_cap": 3.0,
+                       "mu_scale": 1,
+                       "var_scale": 0.05
+                   }
+               }
+           }
+       },
+       {
+            "func": "metric",
+            "params": {
+                "func": "node_classification",
+                "times":10,
+                "test_size":0.3,
+                "model":{
+                    "func":"logistic"
+                }
+            }
+       }
+   ]
+}

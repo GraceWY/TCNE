@@ -2,16 +2,16 @@
     "static_info" : {
         "random_seed": 117,
         "np_seed": 211,
-        "tag_embed_size": 32,
+        "tag_embed_size": 2,
         "en_embed_size": 32,
-        "output_embed_size": 64,
+        "output_embed_size": 34,
         "network_folder": {
             "name": "leetcode",
             "entity": "node.txt",
             "tag": "tag.txt",
             "edge": "edge.txt",
             "mix_edge": "tag-edge.txt",
-            "entity_features": "features_onehot.pkl",
+            "entity_features": "features.pkl",
             "label": "label.dat"
         }
     },    
@@ -39,7 +39,7 @@
                 "func": "optimize_tag",
                 "batch_strategy": "weighted_edges_sampling",
                 "batch_size": 4,
-                "iterations": 6500,
+                "iterations": 1500,
                 "embedding_model": {
                     "func": "gauss_embedding_model",
                     "learning_rate": 0.01,
@@ -65,15 +65,15 @@
                 "func": "joint_optimize",
                 "batch_strategy": "tag_entity_sampling",
                 "batch_size": 64,
-                "iterations": 10000,
+                "iterations": 1500,
                 "show_num": 100,
                 "get_features": {
                     "func": "load_features"
                 },
                 "embedding_model": {
-                    "func": "tag_conditioned_embedding_new",
+                    "func": "tag_conditioned_embedding_debug",
                     "lambda": 1.0,
-                    "learning_rate": 0.01,
+                    "learning_rate": 0.1,
                     "optimizer": "AdamOptimizer",
                     "aggregator": {
                         "agg_neighbor_num": 5
@@ -101,9 +101,6 @@
             "func": "metric",
             "params": {
                 "func": "node_classification",
-                "file_type":"pickle",
-                "data":"leetcode",
-                "ground_truth":"label.txt",
                 "times":10,
                 "test_size":0.3,
                 "model":{

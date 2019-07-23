@@ -15,7 +15,7 @@ def params_handler(params, info, pre_res, **kwargs):
     if ( "tag_walker" in pre_res ) and ( "walk_file" in pre_res["tag_walker"] ):
         params["walk_file"] = pre_res["tag_walker"]["walk_file"]
     else:
-        params["walk_file"] = os.path.join(info["home_path"], params["walk_file"])
+        params["walk_file"] = os.path.join(info["home_path"], params["tag_walk_file"])
     
     if ("optimize" in pre_res) and ("model_save_path" in pre_res["optimize"]):
         params["embedding_model"]["tag_embedding"]["tag_pre_train"] = pre_res["optimize"]["model_save_path"]

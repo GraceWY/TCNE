@@ -2,15 +2,15 @@
     "static_info" : {
         "random_seed": 157,
         "np_seed": 213,
-        "tag_embed_size": 2,
+        "tag_embed_size": 64,
         "en_embed_size": 32,
         "network_folder": {
-            "name": "lc",
+            "name": "leetcode",
             "entity": "entity.dat",
             "tag": "tag.dat",
             "edge": "edge.dat",
             "mix_edge": "mix_edge.dat",
-            "entity_features": "entity_feature.dat",
+            "entity_features": "features.pkl",
             "label": "label.dat"
         }
     },    
