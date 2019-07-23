@@ -32,9 +32,16 @@ show_nodes = ["Tree","Two Pointers","Dynamic Programming",
               "Depth-first Search","Divide and Conquer"]
 '''
 
+<<<<<<< HEAD
 show_nodes= ['Dynamic Programming', 
         'Greedy', 
          'Linked List', 'Heap', 'Array', 
+=======
+
+        show_nodes= ['Random', 'Reservoir Sampling', 'Dynamic Programming', 
+        'Greedy', 'Design', 'Queue', 'Hash Table',
+         'Linked List', 'Stack', 'Heap', 'Array', 
+>>>>>>> 799f54b77b467ad4d748aaa223b9d412c99382a6
          'Depth-first Search', 'Tree', 'Binary Search Tree',
           'Binary Search', 
           'Two Pointers', 'Trie', "Queue",
@@ -108,6 +115,7 @@ class DrawGraph(object):
             e.set_facecolor(np.array(color_list[random.randint(0,8)])/255)
             #ax.annotate(row2name[i], e.get_center(), fontsize = 15)
             ellipse_x, ellipse_y = e.get_center()            
+
             # ellipse_y += std_sigs[i,1]*2+0.3
             if notation:
                 ax.annotate(row2name[i], (ellipse_x,ellipse_y), fontsize = FONT_SIZE)
