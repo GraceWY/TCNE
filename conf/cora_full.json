@@ -11,7 +11,7 @@
             "tag": "tag.txt",
             "edge": "edge.txt",
             "mix_edge": "tag-edge.txt",
-            "entity_features": "features.pkl",
+            "entity_features": "features_onehot.pkl",
             "label": "label.txt"
         }
     },    
@@ -39,7 +39,7 @@
                 "func": "optimize_tag",
                 "batch_strategy": "weighted_edges_sampling",
                 "batch_size": 32,
-                "iterations": 1500,
+                "iterations": 20000,
                 "embedding_model": {
                     "func": "gauss_embedding_model",
                     "learning_rate": 0.01,
@@ -65,15 +65,15 @@
                 "func": "joint_optimize",
                 "batch_strategy": "tag_entity_sampling",
                 "batch_size": 64,
-                "iterations": 10000,
-                "show_num": 500,
+                "iterations": 5000,
+                "show_num": 100,
                 "get_features": {
                     "func": "load_features"
                 },
                 "embedding_model": {
-                    "func": "tag_conditioned_embedding_debug",
+                    "func": "tag_conditioned_embedding_new",
                     "lambda": 1.0,
-                    "learning_rate": 0.1,
+                    "learning_rate": 0.01,
                     "optimizer": "AdamOptimizer",
                     "aggregator": {
                         "agg_neighbor_num": 5

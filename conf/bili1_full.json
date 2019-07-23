@@ -2,16 +2,16 @@
     "static_info" : {
         "random_seed": 117,
         "np_seed": 211,
-        "tag_embed_size": 2,
-        "en_embed_size": 32,
-        "output_embed_size": 34,
+        "tag_embed_size": 32,
+        "en_embed_size": 64,
+        "output_embed_size": 64,
         "network_folder": {
             "name": "bilibili1",
             "entity": "node.txt",
             "tag": "tag.txt",
             "edge": "edge.txt",
             "mix_edge": "tag-edge.txt",
-            "entity_features": "features.pkl",
+            "entity_features": "features_onehot.pkl",
             "label": "label.txt"
         }
     },    
@@ -38,8 +38,8 @@
             "params": {
                 "func": "optimize_tag",
                 "batch_strategy": "weighted_edges_sampling",
-                "batch_size": 4,
-                "iterations": 1500,
+                "batch_size": 16,
+                "iterations": 6500,
                 "embedding_model": {
                     "func": "gauss_embedding_model",
                     "learning_rate": 0.01,
@@ -64,16 +64,16 @@
             "params": {
                 "func": "joint_optimize",
                 "batch_strategy": "tag_entity_sampling",
-                "batch_size": 64,
-                "iterations": 1500,
+                "batch_size": 128,
+                "iterations": 5000,
                 "show_num": 100,
                 "get_features": {
                     "func": "load_features"
                 },
                 "embedding_model": {
-                    "func": "tag_conditioned_embedding_debug",
+                    "func": "tag_conditioned_embedding_new",
                     "lambda": 1.0,
-                    "learning_rate": 0.1,
+                    "learning_rate": 0.01,
                     "optimizer": "AdamOptimizer",
                     "aggregator": {
                         "agg_neighbor_num": 5
@@ -82,7 +82,7 @@
                         "nce_k": 4 
                     },
                     "tag_embedding": {
-                        "tag_trainable": true,
+                        "tag_trainable": false,
                         "spherical": false,
                         "Closs": 1.0,
                         "wout": true,
@@ -102,9 +102,9 @@
             "params": {
                 "func": "node_classification",
                 "file_type":"pickle",
-                "data":"leetcode",
+                "data":"bilibili1",
                 "ground_truth":"label.txt",
-                "times":10,
+                "times":5,
                 "test_size":0.3,
                 "model":{
                     "func":"logistic"

@@ -85,8 +85,8 @@
                     "Closs": 0.5,
                     "aggregator": {
                         "agg_neighbor_num": 5,
-                        "feature_num": 100, ? what's mean ?
-                        "layer1_weight_dim": 64, ? what's mean ?
+                        "feature_num": 100,
+                        "layer1_weight_dim": 64, 
                         "sample_num": 4,  
                         "hidden_size": 32
                     },

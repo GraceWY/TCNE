@@ -218,8 +218,10 @@ class TagConditionedEmbedding(object):
                         neighbors_emd_reshape = tf.reshape(neighbors_emd, [-1, self.feature_num])
                         neighbors_agg = tf.matmul(neighbors_emd_reshape, self.W_agg1)
                         neighbors_agg_3d = tf.reshape(neighbors_agg, [-1, self.agg_neighbor_num, self.en_embed_size])
-                        h1_pre = tf.reduce_sum(neighbors_agg_3d, axis=1)
-                        h1 = tf.nn.leaky_relu(h1_pre, alpha=0.01)
+                        # h1_pre = tf.reduce_sum(neighbors_agg_3d, axis=1)
+                        h1_pre = tf.reduce_mean(neighbors_agg_3d, axis=1) + u_emd
+                        #h1 = tf.nn.leaky_relu(h1_pre, alpha=0.01)
+                        h1 = tf.nn.relu(h1_pre)
                         return h1
 
 
@@ -315,7 +317,7 @@ class TagConditionedEmbedding(object):
 
             """ Init the parameters of tag distribution
             """
-            if len(self.tag_pre_train) != 0 && not DEBUG:
+            if len(self.tag_pre_train) != 0 and not DEBUG:
                 print ("[+] reload pre train parameters of tag distribution from %s" % (self.tag_pre_train))
                 self.logger.info("[+] save pre train parameters of tag distribution from %s\n" % (self.tag_pre_train))
                 print (sess.run(self.mu)[0, :])
