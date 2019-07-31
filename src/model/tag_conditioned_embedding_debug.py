@@ -213,14 +213,16 @@ class TagConditionedEmbedding(object):
                     self.feature_mat = tf.constant(self.features, dtype = FLOAT, name = "feature_mat")
                     def AGG(en_ids, neighbors):
                         # batch_size * feature_num
-                        u_emd = tf.nn.embedding_lookup(self.feature_mat, en_ids)
+                        u_emd = tf.reshape(tf.nn.embedding_lookup(self.feature_mat, en_ids), [-1, self.feature_num])
                         # batch_size * agg_neighbor_num * feature_num
                         neighbors_emd = tf.nn.embedding_lookup(self.feature_mat, neighbors)
                         neighbors_emd_reshape = tf.reshape(neighbors_emd, [-1, self.feature_num])
                         neighbors_agg = tf.matmul(neighbors_emd_reshape, self.W_agg1)
                         neighbors_agg_3d = tf.reshape(neighbors_agg, [-1, self.agg_neighbor_num, self.en_embed_size])
-                        h1_pre = tf.reduce_sum(neighbors_agg_3d, axis=1)
-                        h1 = tf.nn.leaky_relu(h1_pre, alpha=0.01)
+                        #h1_pre = tf.reduce_sum(neighbors_agg_3d, axis=1)
+                        h1_pre = tf.reduce_mean(neighbors_agg_3d, axis=1) + tf.matmul(u_emd, self.W_agg1)
+                        # h1 = tf.nn.leaky_relu(h1_pre, alpha=0.01)
+                        h1 = tf.nn.relu(h1_pre)
                         return h1
 
 

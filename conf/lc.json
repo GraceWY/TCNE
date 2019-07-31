@@ -1,0 +1,114 @@
+{
+    "static_info" : {
+        "random_seed": 157,
+        "np_seed": 213,
+        "tag_embed_size": 2,
+        "en_embed_size": 32,
+        "network_folder": {
+            "name": "lc",
+            "entity": "entity.dat",
+            "tag": "tag.dat",
+            "edge": "edge.dat",
+            "mix_edge": "mix_edge.dat",
+            "entity_features": "entity_feature.dat",
+            "label": "label.dat"
+        }
+    },    
+   "run_modules": [
+        {
+            "func": "construct_graph",
+            "params": {
+                "func": "construct_graph",
+                "directed": false
+            } 
+        },
+        {
+            "func": "tag_walker",
+            "params": {
+                "func": "hybrid_walker",
+                "c": 0.5,
+                "num_paths": 100,
+                "max_path_len": 5,
+                "alpha": 0.001 
+            }    
+        },
+        {
+            "func": "optimize",
+            "params": {
+                "func": "optimize_tag",
+                "batch_strategy": "weighted_edges_sampling",
+                "batch_size": 4,
+                "iterations": 500,
+                "embedding_model": {
+                    "func": "gauss_embedding_model",
+                    "learning_rate": 0.01,
+                    "optimizer": "AdamOptimizer",
+                    "Closs": 2.0,
+                    "spherical": false,
+                    "fixvar": false,
+                    "wout": true,
+                    "normclip": false,
+                    "varclip": false,
+                    "show_num": 100,
+                    "lower_sig": 0.02,
+                    "upper_sig": 3.0, 
+                    "norm_cap": 3.0,
+                    "mu_scale": 20,
+                    "var_scale": 1   
+                }
+            }
+        },
+        {
+            "func": "metric",
+            "params": {
+                "func": "visual_dist",
+                "timesOfSigma": 3
+            }    
+        },
+        {
+            "func": "optimize",
+            "params": {
+                "func": "joint_optimize",
+                "walk_file": "/Users/wangyun/repos/TCNE/data/lc/hybrid_walk_nums_path(100)_max_path_len(5).dat",
+                "batch_strategy": "tag_entity_sampling",
+                "batch_size": 8,
+                "iterations": 500,
+                "show_num": 100,
+                "get_features": {
+                    "func": "generator",
+                    "dim": 10
+                },
+                "embedding_model": {
+                    "func": "tag_conditioned_embedding",
+                    "learning_rate": 0.01,
+                    "optimizer": "AdamOptimizer",
+                    "Closs": 0.5,
+                    "aggregator": {
+                        "agg_neighbor_num": 5,
+                        "feature_num": 100,
+                        "layer1_weight_dim": 64, 
+                        "sample_num": 4,  
+                        "hidden_size": 32
+                    },
+                    "generative_net": {
+                        "nce_k": 5    
+                    },
+                    "tag_embedding": {
+                        "tag_trainable": true,
+                        "spherical": false,
+                        "tag_pre_train": "",
+                        "Closs": 1.0,
+                        "wout": true,
+                        "normclip": false,
+                        "varclip": false,
+                        "lower_sig": 0.02,
+                        "upper_sig": 5.0, 
+                        "norm_cap": 3.0,
+                        "mu_scale": 1,
+                        "var_scale": 0.05   
+                    }
+                }
+            }
+        }
+   ] 
+}

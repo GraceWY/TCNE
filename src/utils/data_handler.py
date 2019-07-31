@@ -46,7 +46,7 @@ class DataHandler(object):
                 reversed dict {id, str} (node_id, name)
         """
         mp = dict()
-        with open(file_path, "r", encoding="gb2312") as f:
+        with open(file_path, "r", encoding = "gb2312") as f:
             for line in f:
                 line = line.strip()
                 if len(line) == 0:

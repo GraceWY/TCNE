@@ -11,7 +11,11 @@
             "tag": "tag.txt",
             "edge": "edge.txt",
             "mix_edge": "tag-edge.txt",
+<<<<<<< HEAD:conf.bak/cora_full.json
             "entity_features": "features_tag.pkl",
+=======
+            "entity_features": "features_onehot.pkl",
+>>>>>>> 54e8e89372ba0655cc840d73366e948abd17edcf:conf/cora_full.json
             "label": "label.txt"
         }
     },    
@@ -39,7 +43,11 @@
                 "func": "optimize_tag",
                 "batch_strategy": "weighted_edges_sampling",
                 "batch_size": 32,
+<<<<<<< HEAD:conf.bak/cora_full.json
                 "iterations": 2000,
+=======
+                "iterations": 20000,
+>>>>>>> 54e8e89372ba0655cc840d73366e948abd17edcf:conf/cora_full.json
                 "embedding_model": {
                     "func": "gauss_embedding_model",
                     "learning_rate": 0.01,
@@ -65,14 +73,24 @@
                 "func": "joint_optimize",
                 "batch_strategy": "tag_entity_sampling",
                 "batch_size": 64,
+<<<<<<< HEAD:conf.bak/cora_full.json
                 "iterations": 2000,
                 "show_num": 500,
+=======
+                "iterations": 5000,
+                "show_num": 100,
+>>>>>>> 54e8e89372ba0655cc840d73366e948abd17edcf:conf/cora_full.json
                 "get_features": {
                     "func": "load_features"
                 },
                 "embedding_model": {
+<<<<<<< HEAD:conf.bak/cora_full.json
                     "func": "tag_conditioned_embedding_debug",
                     "lambda": 0.0,
+=======
+                    "func": "tag_conditioned_embedding_new",
+                    "lambda": 1.0,
+>>>>>>> 54e8e89372ba0655cc840d73366e948abd17edcf:conf/cora_full.json
                     "learning_rate": 0.01,
                     "optimizer": "AdamOptimizer",
                     "aggregator": {
