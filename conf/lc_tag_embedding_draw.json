@@ -18,8 +18,8 @@
             "func": "metric",
             "params": {
                 "func": "visual_dist",
-                "timesOfSigma": 1,
-                "path": "/Users/wangyun/repos/TCNE/res/lc_tag_embedding_simrank/2019-04-10-17:07:21.718939",
+                "timesOfSigma": 0.4,
+                "path": "/Users/wangyun/repos/TCNE/res/lc_tag_embedding_hybrid/2019-08-03-13:06:17.552535",
                 "mus": "mus.pkl",
                 "sigs": "sigs.pkl"
             }    

@@ -29,7 +29,7 @@ def params_handler(params, info, pre_res, **kwargs):
 def optimize(params, info, pre_res, **kwargs):
     res = params_handler(params, info, pre_res)
 
-    G = dh.load_edge_as_graph(params["walk_file"], os.path.join(info["network_folder"]["name"], info["network_folder"]["tag"]))
+    G = dh.load_edge_as_graph(params["walk_file"], os.path.join(info["network_folder"]["name"], info["network_folder"]["tag"]), os.path.join(info["network_folder"]["name"], info["network_folder"]["tag_score"]))
     params["embedding_model"]["num_nodes"] = len(G.nodes())
     params["embedding_model"]["res_home"] = info["res_home"]
 

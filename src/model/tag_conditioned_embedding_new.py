@@ -44,6 +44,7 @@ class TagConditionedEmbedding(object):
 
         # The constant in margin-based loss
         self.Closs = 1.0 if "Closs" not in params["tag_embedding"] else params["tag_embedding"]["Closs"]
+        self.lambda_save_order = 0.1 if "lambda_save_order" not in params["tag_embedding"] else params["tag_embedding"]["lambda_save_order"]
         # whether the w and c use the uniform parameters
         self.wout = False if "wout" not in params["tag_embedding"] else params["tag_embedding"]["wout"] 
 
@@ -95,7 +96,9 @@ class TagConditionedEmbedding(object):
                     self.tag_placeholders = {
                         "u_id": tf.placeholder(name="u_id", dtype=INT, shape=[None]),
                         "p_id": tf.placeholder(name="p_id", dtype=INT, shape=[None]),
-                        "n_id": tf.placeholder(name="n_id", dtype=INT, shape=[None])
+                        "n_id": tf.placeholder(name="n_id", dtype=INT, shape=[None]),
+                        "u_score": tf.placeholder(name="u_score", dtype=FLOAT, shape=[None]),
+                        "p_score": tf.placeholder(name="p_score", dtype=FLOAT, shape=[None])
                     }
 
                 with tf.name_scope("Variable"):
@@ -153,7 +156,9 @@ class TagConditionedEmbedding(object):
                 with tf.name_scope("LossCal"):
                     self.energy_pos = energy(self.mu_embed, self.sig_embed, self.mu_embed_pos, self.sig_embed_pos) 
                     self.energy_neg = energy(self.mu_embed, self.sig_embed, self.mu_embed_neg, self.sig_embed_neg) 
-                    self.tag_loss = tf.reduce_mean(tf.maximum(FLOAT(0.0), self.Closs - self.energy_pos + self.energy_neg, name='MarginLoss'))
+                    self.tag_loss = tf.reduce_mean(tf.maximum(FLOAT(0.0), self.Closs - self.energy_pos + self.energy_neg, name='MarginLoss')
+                            + self.lambda_save_order * tf.maximum(FLOAT(0.0), self.Closs - (tf.sqrt(self.sig_embed)-tf.sqrt(self.sig_embed_pos))*(tf.placeholder["u_score"]-tf.placeholder["p_score"])))
+
 
                 with tf.name_scope("ClipOp"):
                     """ Clip variance
@@ -348,7 +353,9 @@ class TagConditionedEmbedding(object):
                 tag_input_dict = {
                     self.tag_placeholders["u_id"]: batch["tag_u"],
                     self.tag_placeholders["p_id"]: batch["tag_v"],
-                    self.tag_placeholders["n_id"]: batch["tag_n"]
+                    self.tag_placeholders["n_id"]: batch["tag_n"],
+                    self.tag_placeholders["u_score"]: batch["tag_u_score"],
+                    self.tag_placeholders["p_score"]: batch["tag_v_score"]
                 }
                 en_input_dict = {
                     self.entity_placeholders["u_id"]: batch["en_u"],
@@ -457,3 +464,4 @@ class TagConditionedEmbedding(object):
         with tf.Session(graph=self.tensor_graph) as sess:
             self.model_saver.restore(sess, model_path)
             return sess.run(self.u_y, feed_dict=input_dict)
+                    self.tag_placeholders["p_id"]: batch["tag_v"],

@@ -38,7 +38,7 @@ def params_handler(params, info, pre_res, **kwargs):
             os.path.join(info["network_folder"]["name"], info["network_folder"]["entity"]),
             os.path.join(info["network_folder"]["name"], info["network_folder"]["tag"]))  # G.node[id]["tags"] = binary lst tag 
     G_tag = dh.load_edge_as_graph(params["walk_file"], \
-                os.path.join(info["network_folder"]["name"], info["network_folder"]["tag"])) # walk file
+                os.path.join(info["network_folder"]["name"], info["network_folder"]["tag"]), os.path.join(info["network_folder"]["name"], info["network_folder"]["tag_score"])) # walk file
     params["embedding_model"]["en_num"] = len(G_entity.nodes())
     params["embedding_model"]["tag_num"] = len(G_tag.nodes())
     print (params["embedding_model"]["tag_num"], params["embedding_model"]["en_num"])

@@ -9,6 +9,7 @@ from batch_strategy.alias_table_sampling import AliasTable as at
 import pdb
 
 INT = np.int32
+FLOAT = np.float64
 
 class BatchStrategy(object):
     def __init__(self, G, params=None):
@@ -18,8 +19,13 @@ class BatchStrategy(object):
         self.batch_size = params["batch_size"]
         self.edges = G.edges()
         self.nodes = G.nodes()
+        self.tag_scores = {}
+        for i in range(len(G.node)):
+            self.tag_scores[i] = G.node[i]["score"]
         edge_probs = []
         node_probs = []
+
+        # pdb.set_trace()
 
         # for sampling u and v_pos
         for e in self.edges: 
@@ -39,10 +45,14 @@ class BatchStrategy(object):
             batch_u = []
             batch_v_pos = []
             batch_v_neg = []
+            batch_u_score = []
+            batch_v_pos_score = []
             for _ in range(self.batch_size):
                 idx = self.edge_sampler.sample()
                 batch_u.append(self.edges[idx][0])
                 batch_v_pos.append(self.edges[idx][1])
                 idx = self.node_sampler.sample()
                 batch_v_neg.append(self.nodes[idx])
-            yield np.array(batch_u, dtype=INT), np.array(batch_v_pos, dtype=INT), np.array(batch_v_neg, dtype=INT)
+                batch_u_score.append(self.tag_scores[batch_u[-1]])
+                batch_v_pos_score.append(self.tag_scores[batch_v_pos[-1]])
+            yield np.array(batch_u, dtype=INT), np.array(batch_v_pos, dtype=INT), np.array(batch_v_neg, dtype=INT), np.array(batch_u_score, dtype=FLOAT), np.array(batch_v_pos_score, dtype=FLOAT)

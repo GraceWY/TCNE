@@ -1,6 +1,6 @@
 {
     "static_info" : {
-        "random_seed": 310,
+        "random_seed": 311,
         "np_seed": 3,
         "tag_embed_size": 2,
         "en_embed_size": 32,
@@ -18,14 +18,10 @@
         {
             "func": "metric",
             "params": {
-                "func": "visual_dist",
-                "timesOfSigma": 0.5,
-                "path": "/Users/wangyun/repos/TCNE/res/lc_tag_embedding_hy    brid_0/2019-08-03-14:08:17.859557",
+                "func": "visual_cor_score_sig",
+                "path": "/Users/wangyun/repos/TCNE/res/lc_tag_embedding_hybrid_10/2019-08-03-15:46:39.212935",
                 "mus": "mus.pkl",
-                "sigs": "sigs.pkl",
-                "filter": true,
-                "draw_ellipse":true,
-                "notation": true
+                "sigs": "sigs.pkl"
             }    
         }
    ] 

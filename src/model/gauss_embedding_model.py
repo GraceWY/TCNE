@@ -25,6 +25,7 @@ class NodeEmbedding(object):
 
         # The constant in margin-based loss
         self.Closs = 1.0 if "Closs" not in params else params["Closs"]
+        self.lambda_save_order = 0.1 if "lambda_save_order" not in params else params["lambda_save_order"]
         # whether to fix the variance or not, that makes the var untrainable
         self.fixvar = False if "fixvar" not in params else params["fixvar"] 
         # whether the w and c use the uniform parameters
@@ -68,6 +69,8 @@ class NodeEmbedding(object):
                     self.u_id = tf.placeholder(name="u_id", dtype=INT, shape=[None])
                     self.v_pos_id = tf.placeholder(name="vpos_id", dtype=INT, shape=[None])
                     self.v_neg_id = tf.placeholder(name="vneg_id", dtype=INT, shape=[None])
+                    self.u_score = tf.placeholder(name="u_score", dtype=FLOAT, shape=[None])
+                    self.v_pos_score = tf.placeholder(name="v_pos_score", dtype=FLOAT, shape=[None])
 
                 with tf.name_scope("Variable"):
                     self.mu = tf.Variable(tf.random_uniform([self.num_nodes, self.dim], \
@@ -123,7 +126,8 @@ class NodeEmbedding(object):
                 with tf.name_scope("LossCal"):
                     self.energy_pos = energy(self.mu_embed, self.sig_embed, self.mu_embed_pos, self.sig_embed_pos) 
                     self.energy_neg = energy(self.mu_embed, self.sig_embed, self.mu_embed_neg, self.sig_embed_neg) 
-                    self.loss = tf.reduce_mean(tf.maximum(FLOAT(0.0), self.Closs - self.energy_pos + self.energy_neg, name='MarginLoss'))
+                    self.loss = tf.reduce_mean(tf.maximum(FLOAT(0.0), self.Closs - self.energy_pos + self.energy_neg, name='MarginLoss')
+                            + self.lambda_save_order * tf.maximum(FLOAT(0.0), self.Closs - tf.norm(tf.sqrt(self.sig_embed)-tf.sqrt(self.sig_embed_pos), axis=1, ord=1)*(self.u_score-self.v_pos_score)))
 
                 self.train_step = getattr(tf.train, self.optimizer)(self.lr).minimize(self.loss)
 
@@ -171,16 +175,18 @@ class NodeEmbedding(object):
         print ("[+] Start gaussian embedding ...")
         self.logger.info("[+] Start gaussian embedding ...")
         loss = 0.0
-        # pdb.set_trace()
 
         with tf.Session(graph = self.tensor_graph) as sess:
             sess.run(tf.global_variables_initializer())
             for i, batch in enumerate(get_batch()):
                 input_dict = {self.u_id: batch[0],
                         self.v_pos_id: batch[1],
-                        self.v_neg_id: batch[2]}
+                        self.v_neg_id: batch[2],
+                        self.u_score: batch[3],
+                        self.v_pos_score: batch[4]}
                 self.train_step.run(input_dict)
                 loss += self.loss.eval(input_dict)
+
 
                 # clip mu
                 if self.normclip:
@@ -234,4 +240,4 @@ if __name__ == "__main__":
     params["res_home"] = "./"
     NE = NodeEmbedding(params)
     NE.build_graph()
-    NE.load_model("/Users/wangyun/repos/TCNE/res/lc_pretrain/2019-01-30-15:15:08.326264/ckpt/GaussEmbedding_dim(2)_numnodes(34)_wout(True)_spherical(False)_normClip(False)_varclip(False)-500")
+    #NE.load_model("/Users/wangyun/repos/TCNE/res/lc_pretrain/2019-01-30-15:15:08.326264/ckpt/GaussEmbedding_dim(2)_numnodes(34)_wout(True)_spherical(False)_normClip(False)_varclip(False)-500")

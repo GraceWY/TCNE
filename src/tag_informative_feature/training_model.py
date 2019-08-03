@@ -81,7 +81,7 @@ def model_select(X, y, linear=True):
 
 
 def main():
-    data_path = "../../data/dataset_top50tag"
+    data_path = "../../data/leetcode"
     fn_training_data = os.path.join(data_path, "training.csv")
     fn_tag_fea = os.path.join(data_path, "tag_features.csv")
     fn_tag_score = os.path.join(data_path, "tag_score.txt")

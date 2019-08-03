@@ -9,9 +9,9 @@ TOPIC_RATIO=0.5
 THETA=2
 
 # load data
-data_path = "../../data/dataset_top50tag"
+data_path = "../../data/leetcode"
 
-fn_mix_edge = os.path.join(data_path, "mix_edge_weighted.dat")
+fn_mix_edge = os.path.join(data_path, "mix_edge.dat")
 fn_tag = os.path.join(data_path, "tag.dat")
 fn_entity = os.path.join(data_path, "entity.dat")
 
@@ -151,7 +151,7 @@ def save_tag_features():
     tag_entropy = get_tag_entropy(tag_num, tag2en, edge_weight)
 
     tag_feas = np.array(list(zip(tag_tf, tag_idf, tag_entropy)))
-    pdb.set_trace()
+    # pdb.set_trace()
 
     df = pd.DataFrame({"tf": tag_feas[:, 0],
             "idf": tag_feas[:, 1],
@@ -198,6 +198,8 @@ def save_training_data():
         for j in range(i+1, tag_num):
             dij = get_D(i, j, tag2en, edge_weight) # return float
             dji = get_D(j, i, tag2en, edge_weight)
+            if dij == 0 or dji == 0:
+                continue
             if dij*1.0/dji > THETA:
                 tmp_pos = np.array(tag_feas[i]) - np.array(tag_feas[j])
                 tmp_pos = np.append(tmp_pos, [1])
@@ -223,7 +225,7 @@ def save_training_data():
 
 
 if __name__ == "__main__":
-     # save_tag_features()
+     save_tag_features()
      save_training_data()
 
 

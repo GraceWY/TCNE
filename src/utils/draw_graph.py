@@ -2,11 +2,12 @@ import os
 import sys
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from matplotlib.patches import Ellipse
 import pdb
 import random
 
-FONT_SIZE=10
+FONT_SIZE=6
 #color_list=[[247,252,240],[224,243,219],[204,235,197],[168,221,181],\
 #[123,204,196],[78,179,211],[43,140,190],[8,104,172],[8,64,129]]
 
@@ -15,48 +16,35 @@ color_list = [[228,26,28],[55,126,184],[77,175,74],[152,78,163],\
 
 #color_list = [[141,211,199],[255,255,179],[190,186,218],[251,128,114],\
 #[128,177,211],[253,180,98],[179,222,105],[252,205,229],[217,217,217]]
-
 """
-            show_nodes=["Binary Search","Stack","String","Array",\
+show_nodes=["Binary Search","Stack","String","Array",\
                         "Depth-first Search","Sort","Queue","Heap",\
                         "Topological Sort","Union Find","Tree",\
                         "Greedy","Linked List","Binary Indexed Tree",\
                         "Hash Table","Random","Graph","Reservoir Sampling",\
                         "Breadth-first Search","Trie","Two Pointers"]
 """
-
-'''
+"""
 show_nodes = ["Tree","Two Pointers","Dynamic Programming",
               "Linked List","Hash Table","Array","Union Find",
               "Binary Search Tree","Greedy","Graph","Breadth-first Search",
               "Depth-first Search","Divide and Conquer"]
-'''
+"""
 
-<<<<<<< HEAD
-show_nodes= ['Dynamic Programming', 
-        'Greedy', 
-         'Linked List', 'Heap', 'Array', 
-=======
 
-        show_nodes= ['Random', 'Reservoir Sampling', 'Dynamic Programming', 
-        'Greedy', 'Design', 'Queue', 'Hash Table',
-         'Linked List', 'Stack', 'Heap', 'Array', 
->>>>>>> 799f54b77b467ad4d748aaa223b9d412c99382a6
-         'Depth-first Search', 'Tree', 'Binary Search Tree',
-          'Binary Search', 
-          'Two Pointers', 'Trie', "Queue",
-           'Recursion',  
-          'Bit Manipulation', 'Binary Indexed Tree', 
-          'Segment Tree', 'Divide and Conquer', 'Sort', 
-          'Rejection Sampling', 'Backtracking', 'Brainteaser', 
-          'Minimax', 'Topological Sort']
-
-'''
+"""
 show_nodes = ["Tree","Two Pointers","Dynamic Programming",
               "Segment Tree","Queue","Array","Union Find",
               "Binary Search Tree","Greedy","Math","Design",
               "Depth-first Search","Divide and Conquer"]
-'''
+"""
+
+show_nodes=["Rejection Sampling", "Graph", "Design", 
+        "Dynamic Programming", "Breadth-first Search", 
+        "Binary Search Tree", "Array", "Backtracking",
+        "Recursion", "String", "Segment Tree", "Map",
+        "Trie", "Minimax", "Binary Indexed Tree", "Two Pointers",
+        "Union Find"]
 class DrawGraph(object):
     """This class is for drawing picture in python
     """
@@ -195,3 +183,19 @@ class DrawGraph(object):
         if save_path is not None:
             plt.savefig(save_path)
         plt.show()
+
+    @staticmethod
+    def draw_lines(df, file_path=None, plot_kind=None):
+        """
+            draw graph with pandas.DataFrame
+        """
+        if plot_kind is not None:
+            df.plot(kind=plot_kind)
+        else:
+            df.plot()
+        if file_path is not None:
+            plt.savefig(file_path)
+        plt.show()
+
+
+

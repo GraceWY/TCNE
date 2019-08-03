@@ -27,16 +27,19 @@ def construct_graph(params, info, pre_res, **kwargs):
                     with entities, node attribute {"oid"}
     """
     res = params_handler(params, info, pre_res) # return {}
-    oid2en, oid2tag, edge_lst, mix_edge_lst = load_graph(params["network_folder"])
+    oid2en, oid2tag, edge_lst, mix_edge_lst, tag_scores = load_graph(params["network_folder"])
     o2n_mp = get_hybrid_idmap(list(oid2en.keys()), list(oid2tag.keys()))
     info["logger"].info("The number of entities and tags are %d and %d, respectively" % (len(oid2en), len(oid2tag)))
 
     HG = init_graph("Hybrid Graph", params["directed"])
     G = init_graph("Entity Graph", params["directed"])
+
+    # pdb.set_trace()
     
     for k, v in oid2tag.items():
         nt = o2n_mp["tag"][k]
-        HG.add_node(nt, {"type": "tag", "oid": k, "name": v})
+        HG.add_node(nt, {"type": "tag", "oid": k, "name": v, "score": tag_scores[k]})
+
     
     for k, v in oid2en.items():
         ne = o2n_mp["entity"][k]
@@ -72,13 +75,15 @@ def load_graph(params):
             tag2oid: the dictionary mapping str to original id
             edge_lst: entity relations
             mix_edge_lst: entity and tag relations
+            tag_scores: a list of tag score with row num indicates tag id 
     """
     en2oid = dh.load_name(os.path.join(params["name"], params["entity"]))
     tag2oid = dh.load_name(os.path.join(params["name"], params["tag"]))
     edge_lst = dh.load_edge(os.path.join(params["name"], params["edge"]))
     mix_edge_lst = dh.load_edge(os.path.join(params["name"], params["mix_edge"]))
+    tag_scores = dh.load_tag_score(os.path.join(params["name"], params["tag_score"])) # list
 
-    return en2oid, tag2oid, edge_lst, mix_edge_lst
+    return en2oid, tag2oid, edge_lst, mix_edge_lst, tag_scores
 
 
 def get_hybrid_idmap(en_id, tag_id):

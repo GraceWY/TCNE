@@ -18,6 +18,7 @@ def params_handler(params, info):
     if "timesOfSigma" not in params:
         params["timesOfSigma"] = 1 
 
+
     if "mus" in params:
         params["mus"] = os.path.join(params["path"], params["mus"])
         params["sigs"] = os.path.join(params["path"], params["sigs"])
@@ -74,7 +75,7 @@ def metric(params, info, pre_res, **kwargs):
         dg.draw_scatter(mus, std_sigs, row2name, res["res_path"], params["timesOfSigma"], params["filter"], params["notation"])
 
 
-    res["scatter_path"] = os.path.join(params["res_home"], "scatter.pdf")
-    dg.draw_scatter(mus, std_sigs, row2name, res["scatter_path"])
+    # res["scatter_path"] = os.path.join(params["res_home"], "scatter.pdf")
+    # dg.draw_scatter(mus, std_sigs, row2name, res["scatter_path"])
 
     return res

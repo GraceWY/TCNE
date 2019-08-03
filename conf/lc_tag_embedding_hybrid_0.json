@@ -10,7 +10,8 @@
             "tag": "tag.dat",
             "edge": "edge.dat",
             "mix_edge": "mix_edge.dat",
-            "label": "label.dat"
+            "label": "label.dat",
+            "tag_score": "tag_score.txt"
         }
     },    
    "run_modules": [
@@ -37,12 +38,13 @@
                 "func": "optimize_tag",
                 "batch_strategy": "weighted_edges_sampling",
                 "batch_size": 4,
-                "iterations": 6001,
+                "iterations": 10001,
                 "embedding_model": {
                     "func": "gauss_embedding_model",
                     "learning_rate": 0.01,
                     "optimizer": "AdamOptimizer",
                     "Closs": 2.0,
+                    "lambda_save_order": 0,
                     "spherical": false,
                     "fixvar": false,
                     "wout": true,

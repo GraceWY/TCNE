@@ -6,6 +6,7 @@ import networkx as nx
 import json
 import pickle
 import numpy as np
+import pandas as pd
 from datetime import datetime
 from sklearn.preprocessing import MultiLabelBinarizer
 
@@ -56,6 +57,24 @@ class DataHandler(object):
         reverse_mp = dict(zip(mp.values(), mp.keys()))
         return reverse_mp
 
+    @staticmethod
+    def load_list(file_path):
+        """
+            load list from file
+        """
+        return np.loadtxt(file_path)
+
+
+    @staticmethod
+    def load_tag_score(file_path):
+        """
+            load tag score file which is a list file [score] and the row number is the tag id
+
+            return :
+                list: {tag_id: score} ({in: float})
+        """
+        return np.loadtxt(file_path) 
+
 
     @staticmethod
     def load_json(file_path):
@@ -69,7 +88,7 @@ class DataHandler(object):
 
 
     @staticmethod
-    def load_edge_as_graph(file_path, name_path):
+    def load_edge_as_graph(file_path, name_path, score_path):
         """ Load walk file {int, int, float}
             name path: {string, id}
             Return networkx G
@@ -77,8 +96,9 @@ class DataHandler(object):
         lst = []
         G = nx.Graph()
         id2name = DataHandler.load_name(name_path)
+        tag_score = DataHandler.load_tag_score(score_path)
         for k, v in id2name.items():
-            G.add_node(k, {"name": v})
+            G.add_node(k, {"name": v, "score": tag_score[k]})
         
         with open(file_path, "r") as f:
             for line in f:
