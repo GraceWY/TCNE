@@ -12,7 +12,8 @@
             "edge": "edge.txt",
             "mix_edge": "tag-edge.txt",
             "entity_features": "features_onehot.pkl",
-            "label": "label.dat"
+            "label": "label.dat",
+            "tag_score": "tag_score.txt"
         }
     },    
    "run_modules": [
@@ -39,12 +40,13 @@
                 "func": "optimize_tag",
                 "batch_strategy": "weighted_edges_sampling",
                 "batch_size": 4,
-                "iterations": 6500,
+                "iterations": 10001,
                 "embedding_model": {
                     "func": "gauss_embedding_model",
                     "learning_rate": 0.01,
                     "optimizer": "AdamOptimizer",
                     "Closs": 2.0,
+                    "lambda_save_order": 0,
                     "spherical": false,
                     "fixvar": false,
                     "wout": true,
@@ -85,6 +87,7 @@
                         "tag_trainable": true,
                         "spherical": false,
                         "Closs": 1.0,
+                        "lambda_save_order": 0,
                         "wout": true,
                         "normclip": false,
                         "varclip": false,

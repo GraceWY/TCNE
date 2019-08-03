@@ -48,7 +48,7 @@ def init(args, params, whole_params):
 def main():
     parser = argparse.ArgumentParser(formatter_class = argparse.RawTextHelpFormatter)
 
-    parser.add_argument("--conf", type = str, default = "lc")
+    parser.add_argument("--conf", type = str, default = "lc_new")
 
     parser.add_argument("--level", type = str, default = "INFO", help="log level = INFO | DEBUG")
     args = parser.parse_args()
