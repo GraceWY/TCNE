@@ -126,8 +126,10 @@ class NodeEmbedding(object):
                 with tf.name_scope("LossCal"):
                     self.energy_pos = energy(self.mu_embed, self.sig_embed, self.mu_embed_pos, self.sig_embed_pos) 
                     self.energy_neg = energy(self.mu_embed, self.sig_embed, self.mu_embed_neg, self.sig_embed_neg) 
+                    #self.loss = tf.reduce_mean(tf.maximum(FLOAT(0.0), self.Closs - self.energy_pos + self.energy_neg, name='MarginLoss')
+                            #+ self.lambda_save_order * tf.maximum(FLOAT(0.0), self.Closs - tf.norm(tf.sqrt(self.sig_embed)-tf.sqrt(self.sig_embed_pos), axis=1, ord=1)*(self.u_score-self.v_pos_score)))
                     self.loss = tf.reduce_mean(tf.maximum(FLOAT(0.0), self.Closs - self.energy_pos + self.energy_neg, name='MarginLoss')
-                            + self.lambda_save_order * tf.maximum(FLOAT(0.0), self.Closs - tf.norm(tf.sqrt(self.sig_embed)-tf.sqrt(self.sig_embed_pos), axis=1, ord=1)*(self.u_score-self.v_pos_score)))
+                            +self.lambda_save_order * tf.maximum(FLOAT(0.0), self.Closs-(tf.exp(0.5*tf.reduce_sum(tf.log(self.sig_embed),axis=1)) - tf.exp(0.5*tf.reduce_sum(tf.log(self.sig_embed_pos),axis=1))) * (self.u_score-self.v_pos_score)))
 
                 self.train_step = getattr(tf.train, self.optimizer)(self.lr).minimize(self.loss)
 
