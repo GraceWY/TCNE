@@ -1,0 +1,114 @@
+{
+    "static_info" : {
+        "random_seed": 157,
+        "np_seed": 213,
+        "tag_embed_size": 32,
+        "en_embed_size": 32,
+        "output_embed_size": 64,
+        "network_folder": {
+            "name": "movie_top50tag",
+            "entity": "node.txt",
+            "tag": "tag.dat",
+            "edge": "edge_weighted.dat",
+            "mix_edge": "mix_edge_weighted.dat",
+            "label": "label.dat",
+            "tag_score": "tag_score.txt"
+        }
+    },    
+   "run_modules": [
+        {
+            "func": "construct_graph",
+            "params": {
+                "func": "construct_graph",
+                "directed": false
+            } 
+        },
+        {
+            "func": "tag_walker",
+            "params": {
+                "func": "hybrid_walker",
+                "c": 0.5,
+                "num_paths": 100,
+                "max_path_len": 5,
+                "alpha": 0.001 
+            }    
+        },
+        {
+            "func": "optimize",
+            "params": {
+                "func": "optimize_tag",
+                "batch_strategy": "weighted_edges_sampling",
+                "batch_size": 4,
+                "iterations": 101,
+                "embedding_model": {
+                    "func": "gauss_embedding_model",
+                    "learning_rate": 0.01,
+                    "optimizer": "AdamOptimizer",
+                    "Closs": 2.0,
+                    "lambda_save_order": 2.0,
+                    "spherical": false,
+                    "fixvar": false,
+                    "wout": true,
+                    "normclip": false,
+                    "varclip": false,
+                    "show_num": 100,
+                    "lower_sig": 0.02,
+                    "upper_sig": 3.0, 
+                    "norm_cap": 3.0,
+                    "mu_scale": 20,
+                    "var_scale": 1   
+                }
+            }
+        },
+        {
+            "func": "optimize",
+            "params": {
+                "func": "joint_optimize",
+                "batch_strategy": "tag_entity_sampling",
+                "batch_size": 64,
+                "iterations": 101,
+                "show_num": 100,
+                "get_features": {
+                    "func": "generator",
+                    "dim": 32
+                },
+                "embedding_model": {
+                    "func": "tag_conditioned_embedding_new",
+                    "lambda": 1.0,
+                    "learning_rate": 0.01,
+                    "optimizer": "AdamOptimizer",
+                    "aggregator": {
+                        "agg_neighbor_num": 5
+                    },
+                    "generative_net": {
+                        "nce_k": 4 
+                    },
+                    "tag_embedding": {
+                        "tag_trainable": true,
+                        "spherical": false,
+                        "Closs": 1.0,
+                        "lambda_save_order": 0,
+                        "wout": true,
+                        "normclip": false,
+                        "varclip": false,
+                        "lower_sig": 0.02,
+                        "upper_sig": 5.0, 
+                        "norm_cap": 3.0,
+                        "mu_scale": 1,
+                        "var_scale": 0.05   
+                    }
+                }
+            }
+        },
+        {
+            "func": "metric",
+            "params": {
+                "func": "multilabel_classification",
+                "file_type":"pickle",
+                "data":"movie_top50tag",
+                "times":10,
+                "n_jobs": 3
+            }
+        }
+   ] 
+}

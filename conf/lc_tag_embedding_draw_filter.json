@@ -20,7 +20,7 @@
             "params": {
                 "func": "visual_dist",
                 "timesOfSigma": 0.5,
-                "path": "/Users/wangyun/repos/TCNE/res/lc_tag_embedding_hy    brid_0/2019-08-03-14:08:17.859557",
+                "path": "/Users/wangyun/repos/TCNE/res/lc_tag_embedding_hybrid_0/2019-08-03-14:08:17.859557",
                 "mus": "mus.pkl",
                 "sigs": "sigs.pkl",
                 "filter": true,

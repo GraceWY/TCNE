@@ -34,61 +34,33 @@ def params_handler(params, info, pre_res):
 
     if "file_type" not in params:
         params["file_type"] = "pickle"
+
+    params["np_seed"] = info["np_seed"]
+
     return {}
-
-
-def classification(X, params):
-    res = {}
-    X_scaled = scale(X)
-    y = dh.load_ground_truth(params["ground_truth"])
-    #print(len(y))
-    #print("y_0=",y[0])
-    ts = 0.0
-    for i in range(9):
-        ts += 0.1
-        acc = 0.0
-        micro_f1 = 0.0
-        macro_f1 = 0.0
-        for _ in range(params["times"]):
-            X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size = ts, stratify = y,random_state=params["np_seed"])
-            # check whether is multi-label classification
-            clf = getattr(mll, params["model"]["func"])(X_train, y_train, params["model"])
-            ret = mll.infer(clf, X_test, y_test)
-            acc += ret[1]
-            y_score = ret[0]
-            micro_f1 += f1_score(y_test, y_score, average='micro')
-            macro_f1 += f1_score(y_test, y_score, average='macro')
-
-        acc /= float(params["times"])
-        micro_f1 /= float(params["times"])
-        macro_f1 /= float(params["times"])
-        print("test_size:",ts)
-        res["%.2f" % ts] = {"acc" : acc, "micro_f1": micro_f1, "macro_f1": macro_f1}
-        print({"acc" : acc, "micro_f1": micro_f1, "macro_f1": macro_f1})
-    return res
 
 
 def multilabel_classification(X, params):
     res = {}
     X_scaled = scale(X)
     y = dh.load_ground_truth(params["ground_truth"])
+    pdb.set_trace()
     #print(len(y))
     #print("y_0=",y[0])
     ts = 0.0
     for i in range(9):
         ts += 0.1
-        acc = 0.0
         micro_f1 = 0.0
         macro_f1 = 0.0
         for _ in range(params["times"]):
-            X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size = ts, stratify = y,random_state=params["np_seed"])
+            X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size = ts, random_state=params["np_seed"])
             # check whether is multi-label classification
             log = MultiOutputClassifier(SGDClassifier(loss='log'), n_jobs=params['n_jobs'])
             log.fit(X_train, y_train)
 
             for i in range(y_test.shape[1]):
-                f1_micro += f1_score(y_test[:, i], log.predict(X_test)[:, i], average='micro')
-                f1_macro += f1_score(y_test[:, i], log.predict(X_test)[:, i], average='macro')
+                micro_f1 += f1_score(y_test[:, i], log.predict(X_test)[:, i], average='micro')
+                macro_f1 += f1_score(y_test[:, i], log.predict(X_test)[:, i], average='macro')
 
         micro_f1 /= (float(params["times"]*y.shape[1]))
         macro_f1 /= (float(params["times"]*y.shape[1]))
@@ -119,7 +91,7 @@ def metric(params, info, pre_res, **kwargs):
         X = dh.load_embedding(embedding_path, params["file_type"], node_num)
 
     # results include: accuracy, micro f1, macro f1
-    metric_res = classification(X, params)
+    metric_res = multilabel_classification(X, params)
 
     # insert into res
     for k, v in metric_res.items():

@@ -9,8 +9,6 @@ from utils.draw_graph import DrawGraph as dg
 import pdb
 
 
-
-
 def params_handler(params, info):
     if "res_home" not in params:
         params["res_home"] = info["res_home"]

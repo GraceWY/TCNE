@@ -88,7 +88,7 @@ class DataHandler(object):
 
 
     @staticmethod
-    def load_edge_as_graph(file_path, name_path, score_path):
+    def load_edge_as_graph(file_path, name_path, score_path = ""):
         """ Load walk file {int, int, float}
             name path: {string, id}
             Return networkx G
@@ -96,9 +96,15 @@ class DataHandler(object):
         lst = []
         G = nx.Graph()
         id2name = DataHandler.load_name(name_path)
-        tag_score = DataHandler.load_tag_score(score_path)
-        for k, v in id2name.items():
-            G.add_node(k, {"name": v, "score": tag_score[k]})
+
+        if (os.path.isfile(score_path)):
+            tag_score = DataHandler.load_tag_score(score_path)
+            for k, v in id2name.items():
+                G.add_node(k, {"name": v, "score": tag_score[k]})
+        else:
+            for k, v in id2name.items():
+                G.add_node(k, {"name": v})
+
         
         with open(file_path, "r") as f:
             for line in f:
@@ -195,13 +201,7 @@ class DataHandler(object):
         '''
         if file_type == "pickle":
             with open(file_path, "rb") as fn:
-                embedding_dict = pickle.load(fn)
-                emb = list(embedding_dict.values())
-                dim = len(emb[0])
-                embedding = np.zeros((node_num,dim))
-                nodes = embedding_dict.keys()
-                for node in nodes:
-                    embedding[node,:] = embedding_dict[node]
+                embedding = pickle.load(fn)
                 print(embedding.shape)
 
         elif file_type == "txt":
@@ -225,9 +225,7 @@ class DataHandler(object):
     @staticmethod
     def load_ground_truth(file_name):
         '''load label for task node classification'''
-        ground_truth_file=open(file_name,'r',encoding = 'gb2312')
-        ground_truth=ground_truth_file.readlines()
-        ground_truth_file.close()
+        ground_truth = np.loadtxt(file_name, dtype=np.int32)
         return ground_truth
 
 

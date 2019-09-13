@@ -30,6 +30,8 @@ class BatchStrategy(object):
             dic["tag_u"] = tag_res[0]
             dic["tag_v"] = tag_res[1]
             dic["tag_n"] = tag_res[2]
+            dic["tag_u_score"] = tag_res[3]
+            dic["tag_v_score"] = tag_res[4]
             return dic
         tag_res = self.bs_tag_handler.get_batch().send(None)
         en_res = self.bs_entity_handler.get_batch().send(None)

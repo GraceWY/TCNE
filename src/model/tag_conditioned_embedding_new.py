@@ -157,7 +157,10 @@ class TagConditionedEmbedding(object):
                     self.energy_pos = energy(self.mu_embed, self.sig_embed, self.mu_embed_pos, self.sig_embed_pos) 
                     self.energy_neg = energy(self.mu_embed, self.sig_embed, self.mu_embed_neg, self.sig_embed_neg) 
                     self.tag_loss = tf.reduce_mean(tf.maximum(FLOAT(0.0), self.Closs - self.energy_pos + self.energy_neg, name='MarginLoss')
-                            + self.lambda_save_order * tf.maximum(FLOAT(0.0), self.Closs - (tf.sqrt(self.sig_embed)-tf.sqrt(self.sig_embed_pos))*(tf.placeholder["u_score"]-tf.placeholder["p_score"])))
+                            + self.lambda_save_order * tf.maximum(FLOAT(0.0), self.Closs - tf.norm(tf.sqrt(self.sig_embed)-tf.sqrt(self.sig_embed_pos), axis=1, ord=1)*(self.tag_placeholders["u_score"]-self.tag_placeholders["p_score"])))
+                    self.tag_loss1 = tf.reduce_mean(tf.maximum(FLOAT(0.0), self.Closs - self.energy_pos + self.energy_neg, name='MarginLoss'))
+                    self.tag_loss2 = tf.reduce_mean(tf.maximum(FLOAT(0.0), self.Closs - tf.norm(tf.sqrt(self.sig_embed)-tf.sqrt(self.sig_embed_pos), axis=1, ord=1)*(self.tag_placeholders["u_score"]-self.tag_placeholders["p_score"])))
+
 
 
                 with tf.name_scope("ClipOp"):
@@ -422,12 +425,13 @@ class TagConditionedEmbedding(object):
                     print (sess.run(self.pos, feed_dict=input_dict))
                     print (sess.run(self.neg, feed_dict=input_dict))
                     print (sess.run(self.loss, feed_dict=input_dict))
-                
 
-                # print (sess.run(self.nce_loss, feed_dict=input_dict))
-                # print (sess.run(self.tag_loss, feed_dict=input_dict))
-                if DEBUG:
-                   pdb.set_trace()
+                    print ("nec_loss, tag_loss, tag_loss1, tag_loss2\n")
+                    print (sess.run(self.nce_loss, feed_dict=input_dict))
+                    print (sess.run(self.tag_loss, feed_dict=input_dict))
+                    print (sess.run(self.tag_loss1, feed_dict=input_dict))
+                    print (sess.run(self.tag_loss2, feed_dict=input_dict))
+                    pdb.set_trace()
 
                 # clip mu
                 if self.normclip:
@@ -459,9 +463,7 @@ class TagConditionedEmbedding(object):
                 self.entity_placeholders["u_noise"]: inputs["u_noise"],
                 self.entity_placeholders["u_neighbors"]: inputs["u_neighbors"]
         }
-        pdb.set_trace()
 
         with tf.Session(graph=self.tensor_graph) as sess:
             self.model_saver.restore(sess, model_path)
             return sess.run(self.u_y, feed_dict=input_dict)
-                    self.tag_placeholders["p_id"]: batch["tag_v"],

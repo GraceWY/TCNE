@@ -6,7 +6,7 @@
         "en_embed_size": 32,
         "network_folder": {
             "name": "movie_top50tag",
-            "entity": "entity.dat",
+            "entity": "node.txt",
             "tag": "tag.dat",
             "edge": "edge_weighted.dat",
             "mix_edge": "mix_edge_weighted.dat",
