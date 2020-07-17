@@ -47,8 +47,8 @@ def metric(params, info, pre_res, **kwargs):
         data_dict["std_sig"] = std_sigs
         name_lst.append("std_sig")
     else:
-        data_dict["mean_std_sig"] = np.mean(std_sigs, axis=1)
-        name_lst.append("mean_std_sig")
+        data_dict["product_std_sig"] = 0.1*np.product(std_sigs, axis=1)
+        name_lst.append("product_std_sig")
         """
         for i in range(len(std_sigs[0])):
             data_dict["std_sig"+str(i)] = std_sigs[:, i]
